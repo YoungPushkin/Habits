@@ -18,3 +18,23 @@ body {
   color: var(--color-text);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
+.app-root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+.app-main {
+  min-height: 100vh;
+  display: flex;
+}
+
+.app-main-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main-content {
+  padding: 24px 32px;
+  color: #ffffff;
+}

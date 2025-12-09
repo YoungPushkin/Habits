@@ -1,18 +1,3 @@
-<script>
-import WelcomeView from './views/WelcomeView.vue'
-import RegisterView from './views/RegisterView.vue'
-
-export default {
-  name: 'App',
-  components: { WelcomeView, RegisterView },
-  data() {
-    return {
-      screen: 'welcome'
-    }
-  }
-}
-</script>
-
 <template>
   <div class="app-root">
     <WelcomeView
@@ -26,26 +11,42 @@ export default {
       @complete="screen = 'main'"
     />
 
-    <div
-      class="app-main-placeholder"
-      v-if="screen === 'main'"
-    >
-      MAIN APP LAYOUT IS COMING SOON
+    <div v-if="screen === 'main'" class="app-main">
+      <Sidebar
+        :collapsed="sidebarCollapsed"
+        @toggle="toggleSidebar"
+      />
+
+      <main class="app-main-content">
+        <h2>Dashboard coming soon</h2>
+        <p>Here we will build your daily overview: habits, tasks and analytics.</p>
+      </main>
     </div>
   </div>
 </template>
 
-<style>
-.app-root {
-  min-height: 100vh;
-  width: 100%;
-  background: #050505;
-  color: white;
-}
+<script>
+import WelcomeView from './views/WelcomeView.vue'
+import RegisterView from './views/RegisterView.vue'
+import Sidebar from './components/layout/Sidebar.vue'
 
-.app-main-placeholder {
-  padding: 40px;
-  font-size: 24px;
-  text-align: center;
+export default {
+  name: 'App',
+  components: {
+    WelcomeView,
+    RegisterView,
+    Sidebar
+  },
+  data() {
+    return {
+      screen: 'welcome',
+      sidebarCollapsed: true
+    }
+  },
+  methods: {
+    toggleSidebar() {
+      this.sidebarCollapsed = !this.sidebarCollapsed
+    }
+  }
 }
-</style>
+</script>
