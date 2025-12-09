@@ -15,12 +15,10 @@
       <Sidebar
         :collapsed="sidebarCollapsed"
         @toggle="toggleSidebar"
+        @logout="logout"
       />
 
-      <main class="app-main-content">
-        <h2>Dashboard coming soon</h2>
-        <p>Here we will build your daily overview: habits, tasks and analytics.</p>
-      </main>
+      <DashboardView />
     </div>
   </div>
 </template>
@@ -29,13 +27,15 @@
 import WelcomeView from './views/WelcomeView.vue'
 import RegisterView from './views/RegisterView.vue'
 import Sidebar from './components/layout/Sidebar.vue'
+import DashboardView from './views/DashboardView.vue'
 
 export default {
   name: 'App',
   components: {
     WelcomeView,
     RegisterView,
-    Sidebar
+    Sidebar,
+    DashboardView
   },
   data() {
     return {
@@ -46,6 +46,10 @@ export default {
   methods: {
     toggleSidebar() {
       this.sidebarCollapsed = !this.sidebarCollapsed
+    },
+    logout() {
+      this.screen = 'welcome'
+      this.sidebarCollapsed = true
     }
   }
 }
