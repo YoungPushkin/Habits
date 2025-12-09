@@ -9,11 +9,10 @@
   color: #ffffff;
   overflow: hidden;
   display: flex;
-  align-items: stretch;
   justify-content: center;
 }
 
-.welcome__overlay {
+.welcome-overlay {
   position: absolute;
   inset: 0;
   background-image:
@@ -24,26 +23,26 @@
   pointer-events: none;
 }
 
-.welcome__content {
+.welcome-inner {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 1120px;
-  padding: 40px 24px 32px;
+  max-width: 1400px;
+  padding: 56px 32px 40px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
-.welcome__logo {
+.welcome-header {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.welcome__logo-mark {
-  width: 36px;
-  height: 36px;
+.logo-mark {
+  width: 40px;
+  height: 40px;
   border-radius: 999px;
   border: 1px solid rgba(212, 175, 55, 0.6);
   display: flex;
@@ -56,117 +55,137 @@
   color: #d4af37;
 }
 
-.welcome__logo-text {
+.logo-text {
   font-family: "Playfair Display", serif;
-  font-size: 18px;
+  font-size: 20px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: #f5f5f5;
 }
 
-.welcome__main {
-  margin-top: 80px;
-  max-width: 560px;
+.welcome-layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 64px;
+  gap: 60px;
 }
 
-.welcome__eyebrow {
-  font-size: 13px;
+.welcome-hero {
+  max-width: 720px;
+}
+
+.hero-eyebrow {
+  font-size: 14px;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: #e2c975;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
-.welcome__title {
+.hero-title {
   font-family: "Playfair Display", serif;
-  font-size: 44px;
+  font-size: 56px;
   line-height: 1.15;
-  margin: 0 0 18px;
+  margin: 0 0 20px;
 }
 
-.welcome__subtitle {
-  font-size: 15px;
-  line-height: 1.6;
-  color: #b0b0b0;
-  max-width: 420px;
-  margin-bottom: 28px;
+.hero-text {
+  font-size: 18px;
+  line-height: 1.7;
+  color: #c0c0c0;
+  max-width: 540px;
+  margin: 0 0 32px;
 }
 
-.welcome__actions {
+.hero-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 14px;
 }
 
-.welcome__button {
+.btn {
   border-radius: 999px;
-  padding: 12px 26px;
-  font-size: 14px;
+  padding: 14px 30px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   border: 1px solid transparent;
   cursor: pointer;
-  transition:
-    background-color 0.18s ease,
-    color 0.18s ease,
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    border-color 0.18s ease;
+  transition: 0.18s ease;
 }
 
-.welcome__button--primary {
+.btn-primary {
   background: linear-gradient(135deg, #d4af37, #e2c975);
   color: #0b0b0b;
   box-shadow: 0 0 24px rgba(212, 175, 55, 0.35);
 }
 
-.welcome__button--primary:hover {
+.btn-primary:hover {
   transform: translateY(-1px);
   box-shadow: 0 0 32px rgba(212, 175, 55, 0.55);
 }
 
-.welcome__button--secondary {
+.btn-outline {
   background: transparent;
   border-color: rgba(212, 175, 55, 0.6);
   color: #f5f5f5;
 }
 
-.welcome__button--secondary:hover {
+.btn-outline:hover {
   background: rgba(212, 175, 55, 0.08);
 }
 
-.welcome__bottom {
-  margin-top: 80px;
-  display: flex;
-  justify-content: flex-start;
+.welcome-image {
+  width: 480px;
+  height: 620px;
+  border-radius: 24px;
+  background-image: url('https://images.unsplash.com/photo-1535223289827-42f1e9919769?auto=format&fit=crop&w=800&q=80');
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.6);
 }
 
-.welcome__hint {
-  font-size: 12px;
+.welcome-footer {
+  margin-top: 80px;
+}
+
+.footer-text {
+  font-size: 13px;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: #8c8c8c;
 }
 
+@media (max-width: 1024px) {
+  .welcome-layout {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 40px;
+  }
+
+  .welcome-image {
+    width: 100%;
+    height: 400px;
+  }
+}
+
 @media (max-width: 768px) {
-  .welcome__content {
-    padding: 24px 18px 24px;
+  .welcome-inner {
+    padding: 32px 20px 24px;
   }
 
-  .welcome__main {
-    margin-top: 56px;
+  .hero-title {
+    font-size: 38px;
   }
 
-  .welcome__title {
-    font-size: 32px;
+  .hero-text {
+    font-size: 15px;
   }
 
-  .welcome__subtitle {
-    max-width: 100%;
-  }
-
-  .welcome__bottom {
-    margin-top: 40px;
+  .welcome-image {
+    display: none;
   }
 }
