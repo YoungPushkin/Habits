@@ -34,10 +34,6 @@ body {
   flex-direction: column;
 }
 
-.app-main-content {
-  padding: 24px 32px;
-  color: #ffffff;
-}
 .dashboard {
   width: 100%;
 }

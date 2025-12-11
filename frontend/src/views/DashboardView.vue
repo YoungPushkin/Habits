@@ -5,12 +5,14 @@
         <h1 class="title">Today overview</h1>
         <p class="subtitle">Habits, tasks and progress for your day.</p>
       </div>
+
       <div class="top-meta">
         <div class="meta-chip">
           <span class="meta-label">Focus mode</span>
           <span class="meta-dot"></span>
           <span class="meta-value">On</span>
         </div>
+
         <div class="meta-date">
           <i class="bi bi-calendar2"></i>
           <span>Today</span>
@@ -25,11 +27,11 @@
           <span class="stat-tag">Habits</span>
         </div>
         <div class="stat-main">
-          <span class="stat-value">68%</span>
-          <span class="stat-sub">7 of 10 habits</span>
+          <span class="stat-value">{{ store.completionPercent }}%</span>
+          <span class="stat-sub">{{ store.todayDone }} of {{ store.todayTotal }} habits</span>
         </div>
         <div class="progress-track">
-          <div class="progress-fill"></div>
+          <div class="progress-fill" :style="{ width: store.completionPercent + '%' }"></div>
         </div>
       </div>
 
@@ -39,17 +41,11 @@
           <span class="stat-tag">Discipline</span>
         </div>
         <div class="stat-main">
-          <span class="stat-value">12 days</span>
+          <span class="stat-value">{{ bestStreak }} days</span>
           <span class="stat-sub">Longest chain</span>
         </div>
         <div class="streak-line">
-          <span class="streak-dot active"></span>
-          <span class="streak-dot active"></span>
-          <span class="streak-dot active"></span>
-          <span class="streak-dot active"></span>
-          <span class="streak-dot"></span>
-          <span class="streak-dot"></span>
-          <span class="streak-dot"></span>
+          <span v-for="n in 7" :key="n" class="streak-dot" :class="{ active: n <= bestStreakDisplay }"></span>
         </div>
       </div>
 
@@ -59,132 +55,96 @@
           <span class="stat-tag">Today</span>
         </div>
         <div class="stat-main">
-          <span class="stat-value">5</span>
-          <span class="stat-sub">of 8 tasks</span>
+          <span class="stat-value">{{ store.todayDone }}</span>
+          <span class="stat-sub">of {{ store.todayTotal }} tasks</span>
         </div>
         <div class="tasks-bars">
-          <span class="task-bar active"></span>
-          <span class="task-bar active"></span>
-          <span class="task-bar active"></span>
-          <span class="task-bar active"></span>
-          <span class="task-bar"></span>
+          <span
+            v-for="n in 5"
+            :key="n"
+            class="task-bar"
+            :class="{ active: n <= Math.min(4, Math.round(store.completionPercent / 25)) }"
+          ></span>
         </div>
       </div>
     </div>
 
     <div class="middle-row">
-      <div class="card large">
-        <div class="card-header">
+      <div class="dash-card dash-card-large">
+        <div class="dash-card-header">
           <div>
-            <h2 class="card-title">Habits for today</h2>
-            <p class="card-subtitle">Keep your promises to yourself.</p>
+            <h2 class="dash-card-title">Habits for today</h2>
+            <p class="dash-card-subtitle">Keep your promises to yourself.</p>
           </div>
-          <button type="button" class="ghost-btn">
-            <i class="bi bi-plus-lg"></i>
-            Add habit
-          </button>
         </div>
 
         <ul class="habit-list">
-          <li class="habit-item">
-            <div class="habit-main">
-              <div class="habit-check active"></div>
-              <div class="habit-text">
-                <span class="habit-name">Morning workout</span>
-                <span class="habit-meta">Daily · 06:30</span>
-              </div>
-            </div>
-            <span class="habit-status done">Done</span>
+          <li v-if="store.habits.length === 0" class="habit-item">
+            <div class="habit-main">No habits yet</div>
           </li>
 
-          <li class="habit-item">
+          <li v-for="h in store.habits" :key="h.id" class="habit-item">
             <div class="habit-main">
-              <div class="habit-check"></div>
-              <div class="habit-text">
-                <span class="habit-name">Read 20 pages</span>
-                <span class="habit-meta">Evening · Focus</span>
+              <div class="habit-check" :class="{ active: h.doneToday }" @click="toggle(h.id)">
+                <i v-if="h.doneToday" class="bi bi-check-lg" style="font-size:12px;color:#050505"></i>
               </div>
-            </div>
-            <span class="habit-status pending">Pending</span>
-          </li>
 
-          <li class="habit-item">
-            <div class="habit-main">
-              <div class="habit-check"></div>
               <div class="habit-text">
-                <span class="habit-name">Plan tomorrow</span>
-                <span class="habit-meta">Night · Reflection</span>
+                <span class="habit-name">{{ h.name }}</span>
+                <span class="habit-meta">{{ h.meta }}</span>
               </div>
             </div>
-            <span class="habit-status upcoming">Upcoming</span>
+
+            <div class="habit-actions">
+              <button class="ghost-btn" @click="remove(h.id)">Remove</button>
+              <span class="habit-status" :class="h.doneToday ? 'done' : 'pending'">
+                {{ h.doneToday ? 'Done' : 'Pending' }}
+              </span>
+            </div>
           </li>
         </ul>
       </div>
 
-      <div class="card medium">
-        <div class="card-header">
+      <div class="dash-card dash-card-medium">
+        <div class="dash-card-header">
           <div>
-            <h2 class="card-title">Week progress</h2>
-            <p class="card-subtitle">Completion by day.</p>
-          </div>
-          <div class="pill-switch">
-            <button type="button" class="pill active">Week</button>
-            <button type="button" class="pill">Month</button>
+            <h2 class="dash-card-title">Activity</h2>
+            <p class="dash-card-subtitle">Days with at least one completed habit.</p>
           </div>
         </div>
 
-        <div class="chart-bars">
-          <div class="chart-bar">
-            <div class="bar bar-70"></div>
-            <span class="bar-label">Mon</span>
+        <div class="circle-block">
+          <div class="circle-progress">
+            <div class="circle-progress-inner" :style="circleStyle"></div>
+            <div class="circle-progress-center">
+              <span class="circle-progress-value">{{ activeDays }}</span>
+              <span class="circle-progress-label">active days</span>
+            </div>
           </div>
-          <div class="chart-bar">
-            <div class="bar bar-40"></div>
-            <span class="bar-label">Tue</span>
-          </div>
-          <div class="chart-bar">
-            <div class="bar bar-90"></div>
-            <span class="bar-label">Wed</span>
-          </div>
-          <div class="chart-bar">
-            <div class="bar bar-60"></div>
-            <span class="bar-label">Thu</span>
-          </div>
-          <div class="chart-bar">
-            <div class="bar bar-80"></div>
-            <span class="bar-label">Fri</span>
-          </div>
-          <div class="chart-bar">
-            <div class="bar bar-30"></div>
-            <span class="bar-label">Sat</span>
-          </div>
-          <div class="chart-bar">
-            <div class="bar bar-50"></div>
-            <span class="bar-label">Sun</span>
-          </div>
+          <p class="circle-caption">
+            One day is counted once, even if you complete several habits.
+          </p>
         </div>
       </div>
     </div>
 
     <div class="bottom-row">
-      <div class="card wide">
-        <div class="card-header">
+      <div class="dash-card dash-card-wide">
+        <div class="dash-card-header">
           <div>
-            <h2 class="card-title">Activity streak</h2>
-            <p class="card-subtitle">Visual map of your consistency.</p>
+            <h2 class="dash-card-title">Activity streak</h2>
+            <p class="dash-card-subtitle">Visual map of your consistency.</p>
           </div>
-          <button type="button" class="ghost-btn">
-            View full analytics
-          </button>
+          <button type="button" class="ghost-btn" @click="resetAll">Reset</button>
         </div>
 
         <div class="heatmap">
-          <div class="heat-row" v-for="row in 4" :key="row">
+          <div class="heat-row" v-for="r in store.activityGridRows" :key="r">
             <span
-              v-for="col in 14"
-              :key="col"
+              v-for="c in store.activityGridCols"
+              :key="c"
               class="heat-cell"
-              :class="heatLevel(row, col)"
+              :class="heatClass(r, c)"
             ></span>
           </div>
         </div>
@@ -195,17 +155,55 @@
 
 <script>
 import '../assets/styles/dashboard.css'
+import { useHabitsStore } from '../stores/habits'
 
 export default {
   name: 'DashboardView',
+  data() {
+    return {
+      store: null
+    }
+  },
+  created() {
+    this.store = useHabitsStore()
+  },
   methods: {
-    heatLevel(row, col) {
-      const value = (row * 7 + col) % 5
-      if (value === 0) return 'lvl-0'
-      if (value === 1) return 'lvl-1'
-      if (value === 2) return 'lvl-2'
-      if (value === 3) return 'lvl-3'
-      return 'lvl-4'
+    toggle(id) {
+      this.store.toggleHabit(id)
+    },
+    remove(id) {
+      const idx = this.store.habits.findIndex(h => h.id === id)
+      if (idx !== -1) this.store.habits.splice(idx, 1)
+      this.store.updateCompletedDay()
+    },
+    resetAll() {
+      this.store.resetAll()
+    },
+    shortDay(i) {
+      return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][i]
+    },
+    heatClass(r, c) {
+      const v = (r * 7 + c) % 5
+      return v === 0 ? 'lvl-0' : v === 1 ? 'lvl-1' : v === 2 ? 'lvl-2' : v === 3 ? 'lvl-3' : 'lvl-4'
+    }
+  },
+  computed: {
+    bestStreak() {
+      return this.store.bestStreak || 0
+    },
+    bestStreakDisplay() {
+      return Math.min(7, this.bestStreak)
+    },
+    activeDays() {
+      return this.store.activeDays || 0
+    },
+    circleStyle() {
+      const max = 7
+      const p = Math.max(0, Math.min(1, this.activeDays / max))
+      const deg = Math.round(p * 360)
+      return {
+        background: `conic-gradient(#d4af37 0deg ${deg}deg, #1a1a1a ${deg}deg 360deg)`
+      }
     }
   }
 }

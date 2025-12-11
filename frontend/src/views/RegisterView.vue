@@ -10,39 +10,13 @@
       <p class="register-subtitle">Start your journey to discipline and success.</p>
 
       <form class="register-form" @submit.prevent="onSubmit">
-        <input
-          v-model="name"
-          type="text"
-          class="register-input"
-          placeholder="Your name"
-          required
-        />
-        <input
-          v-model="email"
-          type="email"
-          class="register-input"
-          placeholder="Email"
-          required
-        />
-        <input
-          v-model="password"
-          type="password"
-          class="register-input"
-          placeholder="Password"
-          required
-        />
+        <input v-model="name" type="text" class="register-input" placeholder="Your name" required />
+        <input v-model="email" type="email" class="register-input" placeholder="Email" required />
+        <input v-model="password" type="password" class="register-input" placeholder="Password" required />
 
-        <button type="submit" class="register-btn">
-          Continue
-        </button>
+        <button type="submit" class="register-btn">Continue</button>
 
-        <button
-          type="button"
-          class="register-back"
-          @click="$emit('back')"
-        >
-          Back to welcome
-        </button>
+        <button type="button" class="register-back" @click="$emit('back')">Back to welcome</button>
       </form>
     </div>
   </section>

@@ -1,23 +1,10 @@
 <template>
   <div class="app-root">
-    <WelcomeView
-      v-if="screen === 'welcome'"
-      @start="screen = 'register'"
-    />
-
-    <RegisterView
-      v-if="screen === 'register'"
-      @back="screen = 'welcome'"
-      @complete="screen = 'main'"
-    />
+    <WelcomeView v-if="screen === 'welcome'" @start="screen = 'register'" />
+    <RegisterView v-if="screen === 'register'" @back="screen = 'welcome'" @complete="screen = 'main'" />
 
     <div v-if="screen === 'main'" class="app-main">
-      <Sidebar
-        :collapsed="sidebarCollapsed"
-        @toggle="toggleSidebar"
-        @logout="logout"
-      />
-
+      <Sidebar :collapsed="sidebarCollapsed" @toggle="toggleSidebar" @logout="logout" />
       <DashboardView />
     </div>
   </div>
@@ -31,26 +18,13 @@ import DashboardView from './views/DashboardView.vue'
 
 export default {
   name: 'App',
-  components: {
-    WelcomeView,
-    RegisterView,
-    Sidebar,
-    DashboardView
-  },
+  components: { WelcomeView, RegisterView, Sidebar, DashboardView },
   data() {
-    return {
-      screen: 'welcome',
-      sidebarCollapsed: true
-    }
+    return { screen: 'welcome', sidebarCollapsed: true }
   },
   methods: {
-    toggleSidebar() {
-      this.sidebarCollapsed = !this.sidebarCollapsed
-    },
-    logout() {
-      this.screen = 'welcome'
-      this.sidebarCollapsed = true
-    }
+    toggleSidebar() { this.sidebarCollapsed = !this.sidebarCollapsed },
+    logout() { this.screen = 'welcome'; this.sidebarCollapsed = true }
   }
 }
 </script>
