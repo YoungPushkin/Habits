@@ -1,0 +1,474 @@
+.habits {
+  padding: 24px 32px;
+  color: #ffffff;
+  background:
+    radial-gradient(circle at top left, rgba(212, 175, 55, 0.18), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(212, 175, 55, 0.26), transparent 55%),
+    linear-gradient(135deg, #050505 0%, #111111 40%, #050505 100%);
+  min-height: 100vh;
+  width: 100%;
+  flex: 1;
+}
+
+.habits-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.habits-title {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  font-size: 28px;
+}
+
+.habits-subtitle {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: #b0b0b0;
+}
+
+.habits-meta {
+  font-size: 14px;
+  color: #d4d4d4;
+}
+
+.habits-count {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.habits-actions-center {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.habits-btn {
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 13px;
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  background: transparent;
+  color: #f5f5f5;
+  cursor: pointer;
+}
+
+.habits-btn.primary {
+  background: linear-gradient(135deg, #d4af37, #e2c975);
+  color: #050505;
+  border-color: transparent;
+}
+
+.habits-list-card {
+  background: #050505;
+  border-radius: 18px;
+  border: 1px solid rgba(212, 175, 55, 0.24);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+  padding: 18px 18px 16px;
+}
+
+.habits-form-title {
+  margin: 0 0 10px;
+  font-size: 18px;
+  font-family: "Playfair Display", serif;
+}
+
+.habits-list-header {
+  margin-bottom: 10px;
+}
+
+.habits-empty {
+  font-size: 14px;
+  color: #b0b0b0;
+}
+
+.habits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.habits-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.habits-list::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.6);
+  border-radius: 999px;
+}
+
+.habit-card {
+  background: #0b0b0b;
+  border-radius: 14px;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  overflow: hidden;
+}
+
+.habit-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #050505;
+  padding: 6px 10px;
+  position: relative;
+}
+
+.habit-card-bookmark {
+  width: 10px;
+  height: 26px;
+  border-radius: 0 0 8px 0;
+  margin-right: 8px;
+}
+
+.habit-card-category {
+  font-size: 12px;
+  color: #e5e5e5;
+}
+
+.habit-card-top-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.habit-card-status {
+  font-size: 11px;
+  border-radius: 999px;
+  padding: 3px 8px;
+}
+
+.status-done {
+  background: rgba(34, 197, 94, 0.16);
+  color: #4ade80;
+}
+
+.status-pending {
+  background: rgba(212, 175, 55, 0.16);
+  color: #e2c975;
+}
+
+.habit-card-menu-wrapper {
+  position: relative;
+}
+
+.habit-card-menu-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: #d4d4d4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.habit-card-menu {
+  position: absolute;
+  right: 0;
+  top: 28px;
+  background: #050505;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 175, 55, 0.24);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  z-index: 20;
+}
+
+.habit-card-menu-item {
+  width: 130px;
+  padding: 8px 12px;
+  font-size: 13px;
+  background: transparent;
+  color: #f5f5f5;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.habit-card-menu-item:hover {
+  background: rgba(212, 175, 55, 0.16);
+}
+
+.habit-card-menu-item.danger {
+  color: #f97373;
+}
+
+.habit-card-menu-item.danger:hover {
+  background: rgba(239, 68, 68, 0.16);
+}
+
+.habit-card-body {
+  padding: 10px 12px 12px;
+}
+
+.habit-card-main-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.habit-card-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #050505;
+}
+
+.habit-card-check.active {
+  background: linear-gradient(135deg, #d4af37, #e2c975);
+  border-color: transparent;
+}
+
+.habit-card-check i {
+  font-size: 13px;
+}
+
+.habit-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.habit-card-name {
+  font-size: 14px;
+}
+
+.habit-card-created {
+  font-size: 11px;
+  color: #707070;
+}
+
+.habit-card-bottom {
+  margin-top: 8px;
+}
+
+.habit-card-pill {
+  display: inline-block;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(212, 175, 55, 0.16);
+  color: #e2c975;
+}
+
+.habit-card-days-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.habit-card-day-dot {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #111111;
+  color: #a8a8a8;
+}
+
+.habit-card-day-dot.active {
+  background: rgba(212, 175, 55, 0.18);
+  color: #f5f5f5;
+}
+
+.habit-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.habit-modal {
+  width: 100%;
+  max-width: 420px;
+  background: #050505;
+  border-radius: 18px;
+  border: 1px solid rgba(212, 175, 55, 0.24);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+  padding: 16px 16px 14px;
+}
+
+.habit-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.habit-modal-title {
+  margin: 0;
+  font-size: 18px;
+  font-family: "Playfair Display", serif;
+}
+
+.habit-modal-close {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: #d4d4d4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.habit-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.habit-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.habit-modal-label {
+  font-size: 13px;
+  color: #d4d4d4;
+}
+
+.habit-modal-input {
+  background: #0b0b0b;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  color: #ffffff;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.habit-modal-input::placeholder {
+  color: #7a7a7a;
+}
+
+.habit-modal-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.habit-modal-cat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  background: #0b0b0b;
+  color: #f5f5f5;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.habit-modal-cat-btn.active {
+  border-color: rgba(212, 175, 55, 0.7);
+  background: rgba(212, 175, 55, 0.14);
+}
+
+.habit-modal-cat-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.habit-modal-toggle {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: #111111;
+}
+
+.habit-modal-toggle-btn {
+  border: none;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: #b0b0b0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.habit-modal-toggle-btn.active {
+  background: rgba(212, 175, 55, 0.18);
+  color: #f5f5f5;
+}
+
+.habit-modal-days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.habit-modal-day {
+  border: none;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #111111;
+  color: #a8a8a8;
+  cursor: pointer;
+}
+
+.habit-modal-day.active {
+  background: rgba(212, 175, 55, 0.18);
+  color: #f5f5f5;
+}
+
+.habit-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.habit-modal-btn {
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  background: transparent;
+  color: #f5f5f5;
+  cursor: pointer;
+}
+
+.habit-modal-btn.primary {
+  background: linear-gradient(135deg, #d4af37, #e2c975);
+  color: #050505;
+  border-color: transparent;
+}
+
+.habit-modal-btn.ghost {
+  background: transparent;
+}
+
+@media (max-width: 768px) {
+  .habits {
+    padding: 18px 16px;
+  }
+
+  .habits-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

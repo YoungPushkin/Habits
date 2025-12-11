@@ -100,3 +100,8 @@
   cursor: pointer;
   font-size: 13px;
 }
+.register-error {
+  color: #f97373;
+  font-size: 13px;
+  margin: 4px 0 8px;
+}

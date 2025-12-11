@@ -18,6 +18,8 @@
         :key="item.name"
         type="button"
         class="item"
+        :class="{ active: $route.path === item.path }"
+        @click="go(item.path)"
       >
         <i :class="[item.icon, 'icon']"></i>
         <span v-if="!collapsed" class="label">{{ item.label }}</span>
@@ -25,10 +27,16 @@
     </nav>
 
     <div class="bottom">
-      <button type="button" class="user">
+      <button
+        type="button"
+        class="user"
+        @click="$emit('logout')"
+      >
         <i class="bi bi-person-circle icon"></i>
         <div v-if="!collapsed" class="user-info">
-          <span class="name">User</span>
+          <span class="sidebar-username">
+            {{ userName || 'User' }}
+          </span>
           <span class="logout">Log out</span>
         </div>
       </button>
@@ -37,21 +45,51 @@
 </template>
 
 <script>
+import 'bootstrap-icons/font/bootstrap-icons.css'
+
 export default {
   name: 'Sidebar',
   props: {
     collapsed: Boolean
   },
-  emits: ['toggle'],
+  emits: ['toggle', 'logout'],
   data() {
     return {
+      userName: '',
       items: [
-        { name: 'dashboard', label: 'Dashboard', icon: 'bi bi-speedometer2' },
-        { name: 'habits', label: 'Habits', icon: 'bi bi-list-check' },
-        { name: 'tasks', label: 'Tasks', icon: 'bi bi-check2-square' },
-        { name: 'analytics', label: 'Analytics', icon: 'bi bi-graph-up' },
-        { name: 'settings', label: 'Settings', icon: 'bi bi-gear' }
+        { name: 'dashboard', label: 'Dashboard', icon: 'bi bi-speedometer2', path: '/dashboard' },
+        { name: 'habits', label: 'Habits', icon: 'bi bi-list-check', path: '/habits' },
+        { name: 'tasks', label: 'Tasks', icon: 'bi bi-check2-square', path: '/tasks' },
+        { name: 'analytics', label: 'Analytics', icon: 'bi bi-graph-up', path: '/analytics' },
+        { name: 'settings', label: 'Settings', icon: 'bi bi-gear', path: '/settings' }
       ]
+    }
+  },
+  created() {
+    const email = localStorage.getItem('current_user_email')
+    if (!email) return
+
+    const raw = localStorage.getItem('users_db')
+    if (!raw) return
+
+    try {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) {
+        const user = parsed.find(u => u.email === email)
+        if (user && user.name) {
+          this.userName = user.name
+        }
+      }
+    } catch (e) {}
+  },
+  methods: {
+    go(path) {
+      if (this.$route.path !== path) {
+        this.$router.push(path)
+      }
+    },
+    logout() {
+      this.$emit('logout')
     }
   }
 }
@@ -85,16 +123,10 @@ export default {
   align-items: center;
   gap: 10px;
 }
-.sidebar.collapsed .toggle {
-  margin-left: 10px;
-}
 
 .icon {
   font-size: 20px;
   color: #d4af37;
-}
-.bi-person-circle.icon {
-  font-size: 25px;
 }
 
 .brand-text {
@@ -117,6 +149,10 @@ export default {
   cursor: pointer;
 }
 
+.sidebar.collapsed .toggle {
+  margin-left: 20px;
+}
+
 .nav {
   display: flex;
   flex-direction: column;
@@ -135,11 +171,16 @@ export default {
   padding: 10px 12px;
   border-radius: 999px;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 15px;
 }
 
 .item:hover {
   background: rgba(212, 175, 55, 0.12);
+}
+
+.item.active {
+  background: rgba(212, 175, 55, 0.2);
+  color: #ffffff;
 }
 
 .label {
@@ -169,13 +210,11 @@ export default {
 }
 
 .name {
-  font-size: 16px;
-  margin-left: 50px;
+  font-size: 13px;
 }
 
 .logout {
-  font-size: 16px;
+  font-size: 11px;
   color: #c0c0c0;
-  margin-left: 50px;
 }
 </style>

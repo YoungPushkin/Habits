@@ -6,17 +6,10 @@
         <span class="logo-text">Habit Flow</span>
       </header>
 
-      <h2 class="register-title">Create your account</h2>
-      <p class="register-subtitle">Start your journey to discipline and success.</p>
+      <h2 class="register-title">Log in</h2>
+      <p class="register-subtitle">Continue with your personal routine.</p>
 
       <form class="register-form" @submit.prevent="onSubmit">
-        <input
-          v-model="name"
-          type="text"
-          class="register-input"
-          placeholder="Your name"
-          required
-        />
         <input
           v-model="email"
           type="email"
@@ -57,11 +50,10 @@ import '../assets/styles/register.css'
 import { useHabitsStore } from '../stores/habits.js'
 
 export default {
-  name: 'RegisterView',
-  emits: ['complete', 'back'],
+  name: 'LoginView',
+  emits: ['loginSuccess', 'back'],
   data() {
     return {
-      name: '',
       email: '',
       password: '',
       error: ''
@@ -69,11 +61,10 @@ export default {
   },
   methods: {
     onSubmit() {
-      const name = this.name.trim()
       const email = this.email.trim().toLowerCase()
       const password = this.password.trim()
 
-      if (!name || !email || !password) {
+      if (!email || !password) {
         this.error = 'Please fill all fields'
         return
       }
@@ -87,13 +78,11 @@ export default {
         } catch (e) {}
       }
 
-      if (users.some(u => u.email === email)) {
-        this.error = 'Account with this email already exists'
+      const user = users.find(u => u.email === email && u.password === password)
+      if (!user) {
+        this.error = 'Wrong email or password'
         return
       }
-
-      users.push({ name, email, password })
-      localStorage.setItem('users_db', JSON.stringify(users))
 
       localStorage.setItem('current_user_email', email)
 
@@ -101,7 +90,7 @@ export default {
       habitsStore.initFromStorage()
 
       this.error = ''
-      this.$emit('complete')
+      this.$emit('loginSuccess')
     }
   }
 }
