@@ -1,39 +1,290 @@
-:root {
-  --color-bg: #050505;
-  --color-text: #ffffff;
-  --color-gold: #d4af37;
-  --color-gold-soft: #e2c975;
+:root{
+  --hf-bg:#050505;
+  --hf-surface:#0b0b0b;
+  --hf-text:#f5f5f5;
+  --hf-muted:rgba(245,245,245,.72);
+  --hf-soft:rgba(245,245,245,.56);
+  --hf-gold:#d4af37;
+  --hf-gold2:#e2c975;
+  --hf-border:rgba(212,175,55,.22);
+  --hf-border2:rgba(212,175,55,.12);
+  --hf-shadow:0 18px 55px rgba(0,0,0,.65);
+  --hf-r-lg:18px;
+  --hf-r-md:14px;
+  --hf-pill:999px;
+  --hf-font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --hf-font-accent:"Playfair Display",serif;
+  --hf-gap:16px;
+  --hf-max:1180px;
 }
 
 *,
 *::before,
-*::after {
-  box-sizing: border-box;
+*::after{box-sizing:border-box}
+
+html,body{margin:0;padding:0}
+
+body{
+  min-height:100vh;
+  font-family:var(--hf-font);
+  color:var(--hf-text);
+  background:
+    radial-gradient(circle at top left, rgba(212,175,55,.14), transparent 58%),
+    radial-gradient(circle at bottom right, rgba(212,175,55,.18), transparent 56%),
+    linear-gradient(135deg, #050505 0%, #111 40%, #050505 100%);
+}
+
+.app-page{width:100%;padding:26px 28px}
+.app-main .v-container{max-width:var(--hf-max);margin:0 auto}
+
+@media (max-width:900px){
+  .app-page{padding:18px 16px}
+}
+
+.t-h1,.t-h2,.t-h3{
+  font-family:var(--hf-font-accent);
+  margin:0;
+  color:var(--hf-text);
+}
+.t-h1{font-size:30px;font-weight:650;letter-spacing:.01em}
+.t-h2{font-size:20px;font-weight:650}
+.t-h3{font-size:16px;font-weight:650}
+.t-subtitle{font-size:14px;color:var(--hf-muted);margin:0}
+.t-body{font-size:14px;margin:0}
+.t-caption{font-size:12px;color:var(--hf-soft);margin:0}
+.t-label{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--hf-gold2)}
+.t-value{font-size:22px;font-weight:750;letter-spacing:.01em;margin:0}
+
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.page-title{display:flex;flex-direction:column;gap:6px;min-width:0}
+.page-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.page-actions{display:flex;justify-content:flex-end;margin-top:6px;margin-bottom:16px}
+
+@media (max-width:900px){
+  .page-header{flex-direction:column;align-items:flex-start}
+  .page-meta{justify-content:flex-start}
+  .page-actions{justify-content:flex-start}
+}
+
+.hf-card{
+  border:1px solid var(--hf-border);
+  border-radius:var(--hf-r-lg);
+  box-shadow:var(--hf-shadow);
+}
+
+.hf-drawer{
+  border-right:1px solid var(--hf-border);
+  background:rgba(5,5,5,.86);
+  backdrop-filter:blur(12px);
+}
+
+.hf-brand{
+  font-family:var(--hf-font-accent);
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  font-size:15px;
+}
+
+:is(.hf-drawer,.dashboard,.tasks,.habits,.settings,.analytics) i.bi{color:var(--hf-gold)}
+
+.stats-row{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(240px,1fr));
+  gap:var(--hf-gap);
+  margin:14px 0 22px;
+}
+@media (max-width:1100px){
+  .stats-row{grid-template-columns:repeat(2,minmax(240px,1fr))}
+}
+@media (max-width:700px){
+  .stats-row{grid-template-columns:1fr}
+}
+
+.habit-list{display:flex;flex-direction:column;gap:12px}
+.task-group-body{display:flex;flex-direction:column;gap:12px}
+
+.progress-bar{
+  width:100%;
+  height:8px;
+  border-radius:var(--hf-pill);
+  background:rgba(255,255,255,.06);
+  overflow:hidden;
+  margin-top:10px;
+}
+.progress-fill{
+  height:100%;
+  border-radius:var(--hf-pill);
+  background:linear-gradient(90deg,var(--hf-gold),var(--hf-gold2));
+}
+
+.app-main{min-height:100vh}
+.app-main .hf-drawer{flex:0 0 auto !important}
+.app-main .v-main{flex:1 1 auto !important;min-width:0}
+
+
+.app-root { min-height: 100vh; }
+.app-main { min-height: 100vh; }
+.app-content { min-width: 0; }
+
+html, body {
+  background: #050505;
+}
+
+.v-application,
+.v-application__wrap,
+.v-main {
+  background: transparent !important;
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(212,175,55,.14), transparent 58%),
+    radial-gradient(circle at bottom right, rgba(212,175,55,.18), transparent 56%),
+    linear-gradient(135deg, #050505 0%, #111 40%, #050505 100%) !important;
 }
-.app-root {
-  min-height: 100vh;
-  width: 100%;
-}
-
-.app-main {
-  min-height: 100vh;
-  display: flex;
+/*Habit Flow: MODALS (GLOBAL)*/
+.hf-modal-card{
+  border:1px solid var(--hf-border);
+  border-radius:var(--hf-r-lg);
+  box-shadow:var(--hf-shadow);
+  background:rgba(11,11,11,.86);
+  backdrop-filter:blur(14px);
 }
 
-.app-main-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+.hf-modal-title{
+  padding:18px 18px 0;
 }
 
-.dashboard {
-  width: 100%;
+.hf-modal-body{
+  padding:14px 18px 18px;
+}
+
+.hf-modal-actions{
+  padding:16px 18px 18px;
+  gap:10px;
+}
+
+.hf-modal-panel{
+  padding:14px;
+  border-radius:var(--hf-r-md);
+  border:1px solid var(--hf-border2);
+  background:rgba(255,255,255,.03);
+}
+
+.hf-icon-btn{
+  border-radius:var(--hf-pill);
+}
+/*BASE CARD*/
+
+.hf-card{
+  background:#050505;
+  border:1px solid rgba(212,175,55,.24);
+  border-radius:var(--hf-r-lg);
+  box-shadow:0 16px 40px rgba(0,0,0,.7);
+}
+
+/*HABIT FLOW — BASE CARD BODY*/
+
+.hf-card-body{
+  padding:20px;
+}
+
+/*HABIT FLOW — CARD ACTION BUTTONS (GLOBAL) */
+
+.hf-action-btn{
+  height:32px;
+  padding:0 12px;
+  border-radius:var(--hf-r-md);
+  font-size:13px;
+  font-weight:500;
+  letter-spacing:.02em;
+}
+
+.hf-action-icon{
+  border-radius:var(--hf-pill);
+}
+
+.hf-action-primary{
+  color:var(--hf-gold);
+}
+
+.hf-action-success{
+  color:#4ade80;
+}
+
+.hf-action-danger{
+  color:#ef4444;
+}
+
+/*HABIT CARD*/
+
+.habit-card{
+  width:100%;
+}
+
+
+.habit-dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  flex-shrink:0;
+}
+
+
+.habit-days{
+  display:inline-flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+
+.habit-day-chip{
+  border:1px solid rgba(212,175,55,.16);
+}
+
+.hf-menu{
+  min-width:180px;
+}
+
+.hf-danger :deep(.v-list-item-title){
+  color:#ef4444;
+}
+
+.hf-danger i{
+  color:#ef4444;
+}
+
+
+/*TASK CARD*/
+
+.task-card{
+  width:100%;
+}
+
+
+.task-title{
+  font-size:15px;
+  font-weight:500;
+  color:var(--hf-text);
+}
+
+
+.task-danger :deep(.v-list-item-title){
+  color:#ef4444;
+}
+
+.task-danger i{
+  color:#ef4444;
+}
+
+
+@media (max-width:768px){
+  .task-card :deep(.v-card-text){
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .task-card :deep(.v-btn){
+    width:100%;
+    justify-content:center;
+  }
 }

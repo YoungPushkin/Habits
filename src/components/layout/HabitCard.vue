@@ -1,70 +1,96 @@
 <template>
-  <div class="habit-card">
-    <div class="habit-card-top">
-      <div class="habit-card-bookmark" :style="{ backgroundColor: categoryColor }"></div>
-      <span class="habit-card-category">{{ categoryLabel }}</span>
-      <div class="habit-card-top-right">
-        <span
-          class="habit-card-status"
-          :class="habit.doneToday ? 'status-done' : 'status-pending'"
+  <v-card class="hf-item-card habit-card">
+    <v-card-title class="d-flex align-center justify-space-between ga-3">
+      <div class="d-flex align-center ga-2 min-w-0">
+        <span class="habit-dot" :style="{ backgroundColor: categoryColor }"></span>
+        <span class="t-label">{{ categoryLabel }}</span>
+      </div>
+
+      <div class="d-flex align-center ga-2">
+        <v-chip
+          size="small"
+          :color="habit.doneToday ? 'success' : 'warning'"
+          variant="tonal"
         >
           {{ habit.doneToday ? 'Done today' : 'Pending' }}
-        </span>
-        <div class="habit-card-menu-wrapper">
-          <button
-            type="button"
-            class="habit-card-menu-btn"
-            @click.stop="menuOpen = !menuOpen"
-          >
-            <i class="bi bi-three-dots-vertical"></i>
-          </button>
-          <div v-if="menuOpen" class="habit-card-menu" @click.stop>
-            <button type="button" class="habit-card-menu-item" @click="onEdit">
-              Edit
-            </button>
-            <button type="button" class="habit-card-menu-item danger" @click="onDelete">
-              Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+        </v-chip>
 
-    <div class="habit-card-body">
-      <div class="habit-card-main-row">
-        <button
-          type="button"
-          class="habit-card-check"
-          :class="{ active: habit.doneToday }"
-          @click="$emit('toggle', habit.id)"
-        >
-          <i v-if="habit.doneToday" class="bi bi-check-lg"></i>
-        </button>
-        <div class="habit-card-text">
-          <span class="habit-card-name">{{ habit.name }}</span>
-          <span class="habit-card-created" v-if="habit.createdAt">
-            Created: {{ habit.createdAt }}
-          </span>
-        </div>
+        <v-menu location="bottom end" :close-on-content-click="true">
+          <template #activator="{ props }">
+            <v-btn
+              v-bind="props"
+              icon
+              size="small"
+              variant="tonal"
+              class="hf-action-icon"
+            >
+              <i class="bi bi-three-dots-vertical"></i>
+            </v-btn>
+          </template>
+
+          <v-list density="comfortable" class="hf-menu">
+            <v-list-item @click="onEdit">
+              <template #prepend>
+                <i class="bi bi-pencil hf-action-primary"></i>
+              </template>
+              <v-list-item-title>Edit</v-list-item-title>
+            </v-list-item>
+
+            <v-list-item class="hf-danger" @click="onDelete">
+              <template #prepend>
+                <i class="bi bi-trash hf-action-danger"></i>
+              </template>
+              <v-list-item-title>Delete</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </div>
+    </v-card-title>
+
+    <v-divider />
+
+    <v-card-text class="pt-4">
+      <div class="d-flex align-center justify-space-between ga-3">
+        <v-list-item class="px-0" lines="two">
+          <template #prepend>
+            <v-checkbox-btn
+              :model-value="habit.doneToday"
+              @update:model-value="toggle"
+            />
+          </template>
+
+          <template #title>
+            <span class="t-body habit-name">{{ habit.name }}</span>
+          </template>
+
+          <template #subtitle>
+            <span v-if="habit.createdAt" class="t-caption">
+              Created: {{ formatDate(habit.createdAt) }}
+            </span>
+          </template>
+        </v-list-item>
       </div>
 
-      <div class="habit-card-bottom">
-        <div v-if="habit.isDaily" class="habit-card-pill">
+      <div class="d-flex align-center justify-space-between flex-wrap ga-2 mt-3">
+        <v-chip v-if="habit.isDaily" size="small" variant="tonal" color="primary">
           Every day
-        </div>
-        <div v-else class="habit-card-days-row">
-          <span
+        </v-chip>
+
+        <div v-else class="habit-days">
+          <v-chip
             v-for="(d, idx) in days"
             :key="idx"
-            class="habit-card-day-dot"
-            :class="{ active: habit.days && habit.days[idx] }"
+            size="x-small"
+            variant="tonal"
+            :color="habit.days && habit.days[idx] ? 'primary' : undefined"
+            class="habit-day-chip"
           >
             {{ d }}
-          </span>
+          </v-chip>
         </div>
       </div>
-    </div>
-  </div>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script>
@@ -79,15 +105,11 @@ const CATEGORY_MAP = {
 export default {
   name: 'HabitCard',
   props: {
-    habit: {
-      type: Object,
-      required: true
-    }
+    habit: { type: Object, required: true }
   },
   emits: ['toggle', 'edit', 'delete'],
   data() {
     return {
-      menuOpen: false,
       days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     }
   },
@@ -103,13 +125,19 @@ export default {
     }
   },
   methods: {
+    toggle() {
+      this.$emit('toggle', this.habit.id)
+    },
     onEdit() {
-      this.menuOpen = false
       this.$emit('edit', this.habit)
     },
     onDelete() {
-      this.menuOpen = false
       this.$emit('delete', this.habit.id)
+    },
+    formatDate(value) {
+      const d = new Date(value)
+      if (Number.isNaN(d.getTime())) return ''
+      return d.toLocaleDateString()
     }
   }
 }

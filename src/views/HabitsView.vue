@@ -1,50 +1,53 @@
 <template>
-  <section class="habits">
-    <div class="habits-header">
-      <div>
-        <h1 class="habits-title">Habits</h1>
-        <p class="habits-subtitle">Create, edit and manage your habits.</p>
+  <section class="habits app-page">
+    <div class="page-header">
+      <div class="page-title">
+        <h1 class="t-h1">Habits</h1>
+        <p class="t-subtitle">Create, edit and manage your habits.</p>
       </div>
-      <div class="habits-meta">
-        <span class="habits-count">
-          Total: {{ habits.length }}
-        </span>
-      </div>
+
+      <v-chip size="small" variant="tonal" color="primary">
+        Total: {{ habits.length }}
+      </v-chip>
     </div>
 
-    <div class="habits-actions-center">
-      <button type="button" class="habits-btn primary" @click="openCreate">
-        ADD+
-      </button>
+    <div class="page-actions">
+      <v-btn color="primary" variant="flat" rounded="pill" @click="openCreateHabit">
+        Add habit
+      </v-btn>
     </div>
 
-    <div class="habits-list-card">
-      <div class="habits-list-header">
-        <h2 class="habits-form-title">All habits</h2>
-      </div>
+    <v-card class="hf-card" variant="tonal">
+      <v-card-title class="d-flex align-center justify-space-between">
+        <div class="t-h2">All habits</div>
+      </v-card-title>
 
-      <div v-if="habits.length === 0" class="habits-empty">
-        No habits yet. Click "Добавить привычку" to create one.
-      </div>
+      <v-divider />
 
-      <div v-else class="habits-list">
-        <HabitCard
-          v-for="h in habits"
-          :key="h.id"
-          :habit="h"
-          @toggle="toggleHabit"
-          @edit="startEdit"
-          @delete="deleteHabit"
-        />
-      </div>
-    </div>
+      <v-card-text>
+        <div v-if="habits.length === 0" class="t-body">
+          No habits yet. Click "Add habit" to create one.
+        </div>
+
+        <div v-else class="habit-list">
+          <HabitCard
+            v-for="h in habits"
+            :key="h.id"
+            :habit="h"
+            @toggle="toggleHabit"
+            @edit="openEditHabit"
+            @delete="deleteHabit"
+          />
+        </div>
+      </v-card-text>
+    </v-card>
 
     <HabitModal
-      :visible="modalVisible"
-      :mode="modalMode"
-      :habit="editingHabit"
-      @close="closeModal"
-      @save="handleSave"
+      v-if="showHabitModal"
+      :mode="habitModalMode"
+      :habit="selectedHabit"
+      @close="onHabitModalClose"
+      @save="handleHabitSave"
     />
   </section>
 </template>
@@ -52,8 +55,7 @@
 <script>
 import HabitCard from '../components/layout/HabitCard.vue'
 import HabitModal from '../components/layout/HabitModal.vue'
-import { useHabitsStore } from '../stores/habits.js'
-import '../assets/styles/habits.css'
+import { useHabitsStore } from '../stores/habits'
 
 export default {
   name: 'HabitsView',
@@ -64,36 +66,40 @@ export default {
   data() {
     return {
       store: null,
-      modalVisible: false,
-      modalMode: 'create',
-      editingHabit: null
+      showHabitModal: false,
+      habitModalMode: 'create',
+      selectedHabit: null
     }
   },
   created() {
     this.store = useHabitsStore()
-    this.store.initFromStorage()
+    this.store.initFromStorage?.()
   },
   computed: {
     habits() {
-      return this.store.habits
+      return this.store ? this.store.habits : []
     }
   },
   methods: {
-    openCreate() {
-      this.modalMode = 'create'
-      this.editingHabit = null
-      this.modalVisible = true
+    openCreateHabit() {
+      this.habitModalMode = 'create'
+      this.selectedHabit = null
+      this.showHabitModal = true
     },
-    startEdit(habit) {
-      this.modalMode = 'edit'
-      this.editingHabit = habit
-      this.modalVisible = true
+    openEditHabit(habit) {
+      this.habitModalMode = 'edit'
+      this.selectedHabit = { ...habit }
+      this.showHabitModal = true
     },
-    closeModal() {
-      this.modalVisible = false
+    onHabitModalClose() {
+      this.showHabitModal = false
+      this.selectedHabit = null
+      this.store?.initFromStorage?.()
     },
-    handleSave(payload) {
-      if (this.modalMode === 'create') {
+    handleHabitSave(payload) {
+      if (!this.store) return
+
+      if (this.habitModalMode === 'create') {
         this.store.addHabit(
           payload.name,
           '',
@@ -102,25 +108,24 @@ export default {
           payload.isDaily,
           payload.days
         )
-      } else if (this.modalMode === 'edit' && this.editingHabit) {
-        this.store.editHabit(this.editingHabit.id, {
+      } else if (this.habitModalMode === 'edit' && this.selectedHabit) {
+        this.store.editHabit(this.selectedHabit.id, {
           name: payload.name,
           category: payload.category,
           isDaily: payload.isDaily,
           days: payload.days
         })
       }
-      this.modalVisible = false
-      this.editingHabit = null
+
+      this.onHabitModalClose()
     },
     toggleHabit(id) {
-      this.store.toggleHabit(id)
+      this.store?.toggleHabit?.(id)
     },
     deleteHabit(id) {
-      this.store.deleteHabit(id)
-      if (this.editingHabit && this.editingHabit.id === id) {
-        this.modalVisible = false
-        this.editingHabit = null
+      this.store?.deleteHabit?.(id)
+      if (this.selectedHabit && this.selectedHabit.id === id) {
+        this.onHabitModalClose()
       }
     }
   }

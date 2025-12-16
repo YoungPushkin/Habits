@@ -1,32 +1,40 @@
 <template>
-  <div class="app-root">
-    <WelcomeView
-      v-if="screen === 'welcome'"
-      @start="screen = 'register'"
-      @login="screen = 'login'"
-    />
-
-    <RegisterView
-      v-if="screen === 'register'"
-      @back="screen = 'welcome'"
-      @complete="goToMain"
-    />
-
-    <LoginView
-      v-if="screen === 'login'"
-      @back="screen = 'welcome'"
-      @loginSuccess="goToMain"
-    />
-
-    <div v-if="screen === 'main'" class="app-main">
-      <Sidebar
-        :collapsed="sidebarCollapsed"
-        @toggle="toggleSidebar"
-        @logout="logout"
+  <v-app>
+    <div class="app-root">
+      <WelcomeView
+        v-if="screen === 'welcome'"
+        @start="screen = 'register'"
+        @login="screen = 'login'"
       />
-      <router-view />
+
+      <RegisterView
+        v-else-if="screen === 'register'"
+        @back="screen = 'welcome'"
+        @complete="goToMain"
+      />
+
+      <LoginView
+        v-else-if="screen === 'login'"
+        @back="screen = 'welcome'"
+        @loginSuccess="goToMain"
+      />
+
+      <v-layout v-else class="app-main">
+        <Sidebar
+          class="sidebar"
+          :collapsed="sidebarCollapsed"
+          @toggle="toggleSidebar"
+          @logout="logout"
+        />
+
+        <v-main class="app-content">
+          <v-container fluid class="pa-6">
+            <router-view />
+          </v-container>
+        </v-main>
+      </v-layout>
     </div>
-  </div>
+  </v-app>
 </template>
 
 <script>
@@ -37,12 +45,7 @@ import Sidebar from './components/layout/Sidebar.vue'
 
 export default {
   name: 'App',
-  components: {
-    WelcomeView,
-    RegisterView,
-    LoginView,
-    Sidebar
-  },
+  components: { WelcomeView, RegisterView, LoginView, Sidebar },
   data() {
     return {
       screen: 'welcome',
@@ -53,6 +56,9 @@ export default {
     const email = localStorage.getItem('current_user_email')
     if (email) {
       this.screen = 'main'
+      this.$nextTick(() => {
+        if (this.$route.path === '/') this.$router.push('/dashboard')
+      })
     }
   },
   methods: {
@@ -61,12 +67,18 @@ export default {
     },
     logout() {
       localStorage.removeItem('current_user_email')
+      localStorage.removeItem('current_user_name')
       this.sidebarCollapsed = true
       this.screen = 'welcome'
+      this.$router.push('/')
     },
     goToMain() {
       this.screen = 'main'
+      this.$nextTick(() => {
+        if (this.$route.path !== '/dashboard') this.$router.push('/dashboard')
+      })
     }
   }
 }
 </script>
+
