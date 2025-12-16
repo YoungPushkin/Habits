@@ -38,9 +38,9 @@
 </template>
 
 <script>
-import WelcomeView from './views/WelcomeView.vue'
-import RegisterView from './views/RegisterView.vue'
-import LoginView from './views/LoginView.vue'
+import WelcomeView from './views/authentication/WelcomeView.vue'
+import RegisterView from './views/authentication/RegisterView.vue'
+import LoginView from './views/authentication/LoginView.vue'
 import Sidebar from './components/layout/Sidebar.vue'
 
 export default {

@@ -1,8 +1,8 @@
 <template>
-  <v-card class="hf-item-card habit-card">
+  <v-card class="card" variant="tonal">
     <v-card-title class="d-flex align-center justify-space-between ga-3">
       <div class="d-flex align-center ga-2 min-w-0">
-        <span class="habit-dot" :style="{ backgroundColor: categoryColor }"></span>
+        <span :style="{ width:'10px', height:'10px', borderRadius:'999px', backgroundColor: categoryColor, display:'inline-block' }"></span>
         <span class="t-label">{{ categoryLabel }}</span>
       </div>
 
@@ -22,23 +22,23 @@
               icon
               size="small"
               variant="tonal"
-              class="hf-action-icon"
+              class="btn-icon"
             >
               <i class="bi bi-three-dots-vertical"></i>
             </v-btn>
           </template>
 
-          <v-list density="comfortable" class="hf-menu">
+          <v-list density="comfortable" class="menu">
             <v-list-item @click="onEdit">
               <template #prepend>
-                <i class="bi bi-pencil hf-action-primary"></i>
+                <i class="bi bi-pencil act-gold"></i>
               </template>
               <v-list-item-title>Edit</v-list-item-title>
             </v-list-item>
 
-            <v-list-item class="hf-danger" @click="onDelete">
+            <v-list-item class="bad" @click="onDelete">
               <template #prepend>
-                <i class="bi bi-trash hf-action-danger"></i>
+                <i class="bi bi-trash act-bad"></i>
               </template>
               <v-list-item-title>Delete</v-list-item-title>
             </v-list-item>
@@ -50,39 +50,42 @@
     <v-divider />
 
     <v-card-text class="pt-4">
-      <div class="d-flex align-center justify-space-between ga-3">
-        <v-list-item class="px-0" lines="two">
-          <template #prepend>
-            <v-checkbox-btn class="btn"
-              :model-value="habit.doneToday"
-              @update:model-value="toggle"
-            />
-          </template>
+      <v-list-item class="px-0" lines="two">
+        <template #prepend>
+          <v-btn
+            icon
+            variant="text"
+            class="habit-toggle"
+            :ripple="false"
+            @click="toggle"
+          >
+            <i v-if="habit.doneToday" class="bi bi-check-lg"></i>
+            <i v-else class="bi bi-circle"></i>
+          </v-btn>
+        </template>
 
-          <template #title>
-            <span class="t-body habit-name">{{ habit.name }}</span>
-          </template>
+        <template #title>
+          <span class="t-body">{{ habit.name }}</span>
+        </template>
 
-          <template #subtitle>
-            <span v-if="habit.createdAt" class="t-caption">
-            </span>
-          </template>
-        </v-list-item>
-      </div>
+        <template #subtitle>
+          <span class="t-cap"></span>
+        </template>
+      </v-list-item>
 
       <div class="d-flex align-center justify-space-between flex-wrap ga-2 mt-3">
         <v-chip v-if="habit.isDaily" size="small" variant="tonal" color="primary">
           Every day
         </v-chip>
 
-        <div v-else class="habit-days">
+        <div v-else class="d-flex ga-2 flex-wrap">
           <v-chip
             v-for="(d, idx) in days"
             :key="idx"
             size="x-small"
             variant="tonal"
             :color="habit.days && habit.days[idx] ? 'primary' : undefined"
-            class="habit-day-chip"
+            class="day-chip"
           >
             {{ d }}
           </v-chip>
@@ -108,9 +111,7 @@ export default {
   },
   emits: ['toggle', 'edit', 'delete'],
   data() {
-    return {
-      days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-    }
+    return { days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] }
   },
   computed: {
     categoryInfo() {
@@ -132,11 +133,6 @@ export default {
     },
     onDelete() {
       this.$emit('delete', this.habit.id)
-    },
-    formatDate(value) {
-      const d = new Date(value)
-      if (Number.isNaN(d.getTime())) return ''
-      return d.toLocaleDateString()
     }
   }
 }

@@ -1,17 +1,17 @@
 <template>
-  <section class="settings app-page">
-    <div class="page-header">
+  <section class="app-page">
+    <div class="page-head">
       <div class="page-title">
-        <h1 class="t-h1">Settings</h1>
-        <p class="t-subtitle">Personalize your experience and manage your account.</p>
+        <h1 class="t-h1 text-gold">Settings</h1>
+        <p class="t-sub text-gold">Personalize your experience and manage your account.</p>
       </div>
     </div>
 
     <v-row class="mt-2" dense>
       <v-col cols="12" md="6">
-        <v-card class="hf-card" variant="tonal">
-          <v-card-title class="d-flex align-center justify-space-between">
-            <div class="t-h2">Profile</div>
+        <v-card class="card" variant="tonal">
+          <v-card-title>
+            <div class="t-h2 text-silver">Profile</div>
           </v-card-title>
 
           <v-divider />
@@ -24,11 +24,11 @@
 
               <div class="min-w-0">
                 <div class="t-body">{{ userName }}</div>
-                <div class="t-caption">{{ userEmail }}</div>
+                <div class="t-cap">{{ userEmail }}</div>
               </div>
             </div>
 
-            <v-btn variant="tonal" rounded="pill" @click="openChangePassword">
+            <v-btn class="btn-primary" variant="flat" rounded="pill" @click="openChangePassword">
               Change password
             </v-btn>
           </v-card-text>
@@ -36,9 +36,9 @@
       </v-col>
 
       <v-col cols="12" md="6">
-        <v-card class="hf-card" variant="tonal">
-          <v-card-title class="d-flex align-center justify-space-between">
-            <div class="t-h2">Appearance</div>
+        <v-card class="card" variant="tonal">
+          <v-card-title>
+            <div class="t-h2 text-silver">Appearance</div>
           </v-card-title>
 
           <v-divider />
@@ -46,8 +46,8 @@
           <v-card-text>
             <div class="d-flex align-center justify-space-between ga-3 flex-wrap">
               <div>
-                <div class="t-body">Theme</div>
-                <div class="t-caption">Currently only dark mode available</div>
+                <div class="t-body text-silver">Theme</div>
+                <div class="t-cap text-silver">Currently only dark mode available</div>
               </div>
 
               <v-chip size="small" variant="tonal" color="primary">Dark</v-chip>
@@ -57,9 +57,9 @@
       </v-col>
 
       <v-col cols="12" md="6">
-        <v-card class="hf-card" variant="tonal">
-          <v-card-title class="d-flex align-center justify-space-between">
-            <div class="t-h2">Notifications</div>
+        <v-card class="card" variant="tonal">
+          <v-card-title>
+            <div class="t-h2 text-silver">Notifications</div>
           </v-card-title>
 
           <v-divider />
@@ -68,38 +68,27 @@
             <div class="d-flex align-center justify-space-between ga-3 flex-wrap">
               <div>
                 <div class="t-body">Daily reminder</div>
-                <div class="t-caption">Get a reminder to complete habits</div>
+                <div class="t-cap">Get a reminder to complete habits</div>
               </div>
 
-              <v-switch
-                :model-value="true"
-                disabled
-                inset
-                hide-details
-                color="primary"
-              />
+              <v-switch :model-value="true" disabled inset hide-details color="primary" />
             </div>
           </v-card-text>
         </v-card>
       </v-col>
 
       <v-col cols="12" md="6">
-        <v-card class="hf-card" variant="tonal">
-          <v-card-title class="d-flex align-center justify-space-between">
-            <div class="t-h2">Danger zone</div>
+        <v-card class="card" variant="tonal">
+          <v-card-title>
+            <div class="t-h2 text-silver">Danger zone</div>
           </v-card-title>
 
           <v-divider />
 
           <v-card-text>
-            <div class="t-caption mb-4">This action is irreversible</div>
+            <div class="t-cap mb-4">This action is irreversible</div>
 
-            <v-btn
-              color="error"
-              variant="tonal"
-              rounded="pill"
-              @click="confirmReset"
-            >
+            <v-btn class="btn-action" color="error" variant="tonal" rounded="pill" @click="confirmReset">
               Reset all data
             </v-btn>
           </v-card-text>
@@ -108,17 +97,15 @@
     </v-row>
 
     <v-dialog v-model="showPasswordModal" max-width="560">
-      <v-card class="hf-card" variant="tonal">
-        <v-card-title class="d-flex align-center justify-space-between">
+      <v-card class="modal">
+        <div class="modal-pad-title d-flex align-center justify-space-between">
           <div class="t-h2">Change password</div>
-          <v-btn icon size="small" variant="tonal" @click="showPasswordModal = false">
+          <v-btn icon size="small" variant="tonal" class="icon-close" @click="showPasswordModal = false">
             <v-icon icon="mdi-close" />
           </v-btn>
-        </v-card-title>
+        </div>
 
-        <v-divider />
-
-        <v-card-text class="pt-4">
+        <div class="modal-pad-body">
           <v-text-field
             v-model="newPassword"
             label="New password"
@@ -139,59 +126,48 @@
             class="mb-3"
           />
 
-          <v-alert
-            v-if="passwordError"
-            type="error"
-            variant="tonal"
-            density="comfortable"
-          >
+          <v-alert v-if="passwordError" type="error" variant="tonal" density="comfortable">
             {{ passwordError }}
           </v-alert>
-        </v-card-text>
+        </div>
 
-        <v-divider />
-
-        <v-card-actions class="pa-4 d-flex justify-end ga-2">
-          <v-btn variant="tonal" rounded="pill" @click="showPasswordModal = false">
+        <div class="modal-pad-actions d-flex justify-end">
+          <v-btn class="btn-action" variant="tonal" rounded="pill" @click="showPasswordModal = false">
             Cancel
           </v-btn>
-          <v-btn color="primary" variant="flat" rounded="pill" @click="changePassword">
+          <v-btn class="btn-primary" variant="flat" rounded="pill" @click="changePassword">
             Save
           </v-btn>
-        </v-card-actions>
+        </div>
       </v-card>
     </v-dialog>
 
     <v-dialog v-model="showResetDialog" max-width="560">
-      <v-card class="hf-card" variant="tonal">
-        <v-card-title class="d-flex align-center justify-space-between">
+      <v-card class="modal">
+        <div class="modal-pad-title d-flex align-center justify-space-between">
           <div class="t-h2">Reset all data?</div>
-          <v-btn icon size="small" variant="tonal" @click="showResetDialog = false">
+          <v-btn icon size="small" variant="tonal" class="icon-close" @click="showResetDialog = false">
             <v-icon icon="mdi-close" />
           </v-btn>
-        </v-card-title>
+        </div>
 
-        <v-divider />
-
-        <v-card-text>
+        <div class="modal-pad-body">
           <div class="t-body mb-2">
             Are you sure? All habits and tasks will be deleted permanently.
           </div>
-          <div class="t-caption">
+          <div class="t-cap">
             This cannot be undone.
           </div>
-        </v-card-text>
+        </div>
 
-        <v-divider />
-
-        <v-card-actions class="pa-4 d-flex justify-end ga-2">
-          <v-btn variant="tonal" rounded="pill" @click="showResetDialog = false">
+        <div class="modal-pad-actions d-flex justify-end">
+          <v-btn class="btn-action" variant="tonal" rounded="pill" @click="showResetDialog = false">
             Cancel
           </v-btn>
-          <v-btn color="error" variant="flat" rounded="pill" @click="resetAll">
+          <v-btn class="btn-action" color="error" variant="flat" rounded="pill" @click="resetAll">
             Reset
           </v-btn>
-        </v-card-actions>
+        </div>
       </v-card>
     </v-dialog>
   </section>
@@ -262,10 +238,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.profile-avatar-text {
-  font-weight: 800;
-  letter-spacing: 0.08em;
-}
-</style>

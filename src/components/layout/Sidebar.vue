@@ -4,12 +4,12 @@
     permanent
     width="260"
     rail-width="80"
-    class="hf-drawer"
+    class="app-drawer"
   >
     <div class="d-flex align-center justify-space-between px-3 py-3">
       <div v-if="!collapsed" class="d-flex align-center ga-2">
-        <i class="bi bi-stars hf-logo-icon"></i>
-        <span class="hf-brand">Habit Flow</span>
+        <i class="bi bi-stars brand-icon"></i>
+        <span class="brand text-gold">Habit Flow</span>
       </div>
 
       <v-btn variant="text" icon @click="$emit('toggle')">
@@ -27,7 +27,7 @@
         router
       >
         <template #prepend>
-          <i :class="item.icon" class="hf-nav-icon"></i>
+          <i :class="item.icon" class="nav-icon"></i>
         </template>
 
         <v-list-item-title v-if="!collapsed">
@@ -83,19 +83,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-
-.hf-brand {
-  font-family: "Playfair Display", serif;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-size: 16px;
-}
-
-.hf-logo-icon,
-.hf-nav-icon {
-  color: #d4af37;
-  font-size: 18px;
-}
-</style>

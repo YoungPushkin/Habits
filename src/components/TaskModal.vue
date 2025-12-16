@@ -1,19 +1,19 @@
 <template>
-  <v-dialog :model-value="true" max-width="680" @update:model-value="$emit('close')">
-    <v-card class="hf-modal-card" rounded="xl">
-      <v-card-title class="hf-modal-title d-flex align-center justify-space-between">
+  <v-dialog :model-value="true" max-width="680" @update:modelValue="$emit('close')">
+    <v-card class="modal" rounded="xl">
+      <v-card-title class="modal-pad-title d-flex align-center justify-space-between">
         <div class="t-h2">
           {{ mode === 'create' ? 'Create task' : 'Edit task' }}
         </div>
 
-        <v-btn class="hf-icon-btn" icon size="small" variant="tonal" @click="$emit('close')">
+        <v-btn class="icon-close" icon size="small" variant="tonal" @click="$emit('close')">
           <v-icon icon="mdi-close" />
         </v-btn>
       </v-card-title>
 
       <v-divider />
 
-      <v-card-text class="hf-modal-body pt-4">
+      <v-card-text class="modal-pad-body pt-4">
         <v-text-field
           v-model="form.title"
           label="Title"
@@ -47,7 +47,7 @@
             Selected: {{ deadlineText }}
           </v-chip>
 
-          <v-card variant="tonal" class="hf-modal-panel">
+          <v-card variant="tonal" class="panel">
             <CalendarPicker v-model="form.deadlineDate" />
           </v-card>
         </div>
@@ -55,7 +55,7 @@
 
       <v-divider />
 
-      <v-card-actions class="hf-modal-actions pa-4 d-flex justify-end">
+      <v-card-actions class="modal-pad-actions pa-4 d-flex justify-end">
         <v-btn variant="tonal" rounded="pill" @click="$emit('close')">
           Cancel
         </v-btn>
@@ -68,7 +68,7 @@
 </template>
 
 <script>
-import CalendarPicker from '../components/layout/CalendarPicker.vue'
+import CalendarPicker from './layout/CalendarPicker.vue'
 
 export default {
   name: 'TaskModal',

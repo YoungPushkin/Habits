@@ -1,11 +1,11 @@
 <template>
-  <div class="hf-carousel">
-    <div class="hf-carousel__nav">
+  <div class="carousel">
+    <div class="carousel-nav">
       <v-btn
         icon
         size="small"
         variant="tonal"
-        class="hf-action-icon hf-action-primary"
+        class="btn-icon act-gold"
         :disabled="isEmpty || atStart"
         @click="prev"
       >
@@ -20,7 +20,7 @@
         icon
         size="small"
         variant="tonal"
-        class="hf-action-icon hf-action-primary"
+        class="btn-icon act-gold"
         :disabled="isEmpty || atEnd"
         @click="next"
       >
@@ -28,8 +28,8 @@
       </v-btn>
     </div>
 
-    <div class="hf-carousel__stage">
-      <div v-if="!isEmpty" class="hf-carousel__slide">
+    <div class="carousel-stage">
+      <div v-if="!isEmpty" class="carousel-slide">
         <slot :item="currentItem" :index="currentIndex" />
       </div>
     </div>

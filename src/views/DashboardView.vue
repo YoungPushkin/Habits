@@ -1,15 +1,15 @@
 <template>
-  <section class="dashboard app-page">
-    <div class="page-header">
+  <section class="app-page">
+    <div class="page-head">
       <div class="page-title">
-        <h1 class="t-h1">Today overview</h1>
-        <p class="t-subtitle">Habits, tasks and progress for your day.</p>
+        <h1 class="t-h1 text-gold">Today overview</h1>
+        <p class="t-sub text-gold">Habits, tasks and progress for your day.</p>
       </div>
 
       <div class="page-meta">
         <v-chip size="small" variant="tonal" color="primary">
           <span class="t-label" style="margin-right:8px;">Focus mode</span>
-          <span class="hf-dot"></span>
+          <span class="dot"></span>
           <span style="margin-left:8px;">On</span>
         </v-chip>
 
@@ -20,29 +20,24 @@
       </div>
     </div>
 
-    <div class="stats-row">
-      <v-card class="hf-card" variant="tonal">
+    <div class="stats">
+      <v-card class="card" variant="tonal">
         <v-card-text>
           <div class="d-flex align-center justify-space-between mb-2">
-            <div class="t-label">Habits</div>
+            <div class="t-label ">Habits</div>
             <div class="t-label">Day completion</div>
           </div>
 
           <div class="d-flex align-end ga-3 mb-3">
             <div class="t-value">{{ store.completionPercent }}%</div>
-            <div class="t-caption">{{ store.todayDone }} of {{ store.todayTotal }} habits</div>
+            <div class="t-cap">{{ store.todayDone }} of {{ store.todayTotal }} habits</div>
           </div>
 
-          <v-progress-linear
-            :model-value="store.completionPercent"
-            height="8"
-            rounded
-            color="primary"
-          />
+          <v-progress-linear :model-value="store.completionPercent" height="8" rounded color="primary" />
         </v-card-text>
       </v-card>
 
-      <v-card class="hf-card" variant="tonal">
+      <v-card class="card" variant="tonal">
         <v-card-text>
           <div class="d-flex align-center justify-space-between mb-2">
             <div class="t-label">Discipline</div>
@@ -51,21 +46,21 @@
 
           <div class="d-flex align-end ga-3 mb-3">
             <div class="t-value">{{ bestStreak }} days</div>
-            <div class="t-caption">Longest chain</div>
+            <div class="t-cap">Longest chain</div>
           </div>
 
-          <div class="hf-streak">
+          <div class="streak">
             <span
               v-for="n in 7"
               :key="n"
-              class="hf-streak-dot"
-              :class="{ active: n <= bestStreakDisplay }"
+              class="streak-dot"
+              :class="{ 'is-on': n <= bestStreakDisplay }"
             />
           </div>
         </v-card-text>
       </v-card>
 
-      <v-card class="hf-card" variant="tonal">
+      <v-card class="card" variant="tonal">
         <v-card-text>
           <div class="d-flex align-center justify-space-between mb-2">
             <div class="t-label">Month</div>
@@ -74,99 +69,98 @@
 
           <div class="d-flex align-end ga-3 mb-3">
             <div class="t-value">{{ monthTasksDone }}</div>
-            <div class="t-caption">{{ monthTasksTotal }} total tasks</div>
+            <div class="t-cap">{{ monthTasksTotal }} total tasks</div>
           </div>
 
-          <div class="hf-bars">
+          <div class="bars">
             <span
               v-for="n in 5"
               :key="n"
-              class="hf-bar"
-              :class="{ active: n <= Math.min(4, Math.round(monthTasksPercent / 25)) }"
+              class="bar"
+              :class="{ 'is-on': n <= Math.min(4, Math.round(monthTasksPercent / 25)) }"
             />
           </div>
         </v-card-text>
       </v-card>
     </div>
 
-    <div class="middle-row">
-      <v-card class="hf-card" variant="tonal">
-        <v-card-title class="d-flex align-center justify-space-between">
-          <div>
-            <div class="t-h2">Habits for today</div>
-            <div class="t-subtitle">Keep your promises to yourself.</div>
-          </div>
-        </v-card-title>
+    <v-row dense>
+      <v-col cols="12" md="8">
+        <v-card class="card" variant="tonal">
+          <v-card-title>
+            <div>
+              <div class="t-h2 text-silver">Habits for today</div>
+              <p class="t-sub text-silver">Keep your promises to yourself.</p>
+            </div>
+          </v-card-title>
 
-        <v-divider />
+          <v-divider />
 
-        <v-card-text>
-          <div v-if="store.habits.length === 0" class="t-body">
-            No habits yet
-          </div>
+          <v-card-text>
+            <div v-if="store.habits.length === 0" class="t-body">
+              No habits yet
+            </div>
 
-          <div v-else>
-            <HfCarousel :items="store.habits" slide-width="380px">
-              <template #default="{ item }">
-                <HabitCard
-                  :habit="item"
-                  mode="today"
-                  @toggle="toggleHabitDone"
-                  @delete="removeHabit"
-                />
-              </template>
-            </HfCarousel>
-          </div>
-        </v-card-text>
-      </v-card>
+            <div v-else>
+              <HfCarousel :items="store.habits">
+                <template #default="{ item }">
+                  <HabitCard
+                    :habit="item"
+                    @toggle="toggleHabitDone"
+                    @edit="openEditHabit"
+                    @delete="removeHabit"
+                  />
+                </template>
+              </HfCarousel>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
 
-      <v-card class="hf-card" variant="tonal">
+      <v-col cols="12" md="4">
+        <v-card class="card" variant="tonal">
+          <v-card-title>
+            <div>
+              <div class="t-h2 text-silver">Quick actions</div>
+              <p class="t-sub text-silver">Create new tasks and habits.</p>
+            </div>
+          </v-card-title>
+
+          <v-divider />
+
+          <v-card-text class="d-flex flex-column ga-3">
+            <v-btn variant="tonal" rounded="pill" color="primary" @click="openTaskModalCreate">
+              <i class="bi bi-plus-lg" style="margin-right:8px;"></i>
+              Add task
+            </v-btn>
+
+            <v-btn class="btn-primary" variant="flat" rounded="pill" @click="openHabitModalCreate">
+              <i class="bi bi-plus-lg" style="margin-right:8px;"></i>
+              Add habit
+            </v-btn>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <div class="mt-4">
+      <v-card class="card" variant="tonal">
         <v-card-title>
           <div>
-            <div class="t-h2">Quick actions</div>
-            <div class="t-subtitle">Create new tasks and habits.</div>
-          </div>
-        </v-card-title>
-
-        <v-divider />
-
-        <v-card-text class="d-flex flex-column ga-3">
-          <v-btn class="hf-primary-btn" variant="flat" rounded="pill" @click="openTaskModal">
-            <i class="bi bi-clipboard-plus" style="margin-right:10px;"></i>
-            Add task
-          </v-btn>
-
-          <v-btn class="hf-primary-btn" variant="flat" rounded="pill" @click="openHabitModal">
-            <i class="bi bi-plus-lg" style="margin-right:10px;"></i>
-            Add habit
-          </v-btn>
-        </v-card-text>
-      </v-card>
-    </div>
-
-    <div class="bottom-row">
-      <v-card class="hf-card" variant="tonal">
-        <v-card-title class="d-flex align-center justify-space-between flex-wrap ga-2">
-          <div>
-            <div class="t-h2">Important timeline</div>
-            <div class="t-subtitle">High priority and near deadlines.</div>
+            <div class="t-h2 text-silver">Important timeline</div>
+            <p class="t-sub text-silver">High priority and near deadlines.</p>
           </div>
         </v-card-title>
 
         <v-divider />
 
         <v-card-text>
-          <v-alert
-            v-if="!importantTasks.length"
-            type="info"
-            variant="tonal"
-            density="comfortable"
-          >
+          <v-alert v-if="!importantTasks.length" type="info" variant="tonal" density="comfortable">
             No important tasks right now.
           </v-alert>
 
           <div v-else>
-            <HfCarousel :items="importantTasks" slide-width="420px">
+            <HfCarousel :items="importantTasks">
               <template #default="{ item }">
                 <TaskCard
                   :task="item"
@@ -183,7 +177,9 @@
 
     <HabitModal
       v-if="showHabitModal"
-      @close="onHabitModalClose"
+      :mode="habitModalMode"
+      :habit="selectedHabit"
+      @close="closeHabitModal"
       @save="handleHabitSave"
     />
 
@@ -191,7 +187,7 @@
       v-if="showTaskModal"
       :mode="taskModalMode"
       :task="selectedTask"
-      @close="onTaskModalClose"
+      @close="closeTaskModal"
       @save="handleTaskSave"
     />
   </section>
@@ -214,6 +210,8 @@ export default {
       store: useHabitsStore(),
       tasksStore: useTasksStore(),
       showHabitModal: false,
+      habitModalMode: 'create',
+      selectedHabit: null,
       showTaskModal: false,
       taskModalMode: 'create',
       selectedTask: null
@@ -279,26 +277,62 @@ export default {
   methods: {
     toggleHabitDone(id) { this.store?.toggleHabit?.(id) },
     removeHabit(id) { this.store?.deleteHabit?.(id) },
-    openHabitModal() { this.showHabitModal = true },
-    openTaskModal() { this.taskModalMode = 'create'; this.selectedTask = null; this.showTaskModal = true },
-    onHabitModalClose() { this.showHabitModal = false; this.store?.initFromStorage?.() },
-    onTaskModalClose() { this.showTaskModal = false; this.selectedTask = null; this.tasksStore?.initFromStorage?.() },
-    handleTaskSave(payload) { this.tasksStore?.addTask?.(payload); this.onTaskModalClose() },
-    handleHabitSave(payload) {
-      this.store?.addHabit?.(payload.name, '', 'custom', payload.category, payload.isDaily, payload.days)
-      this.onHabitModalClose()
+
+    openHabitModalCreate() {
+      this.habitModalMode = 'create'
+      this.selectedHabit = null
+      this.showHabitModal = true
     },
-    completeTask(id) { this.tasksStore?.completeTask?.(id) },
-    deleteTask(id) { this.tasksStore?.deleteTask?.(id) },
-    openEditTask(task) { this.taskModalMode = 'edit'; this.selectedTask = { ...task }; this.showTaskModal = true },
+    openEditHabit(habit) {
+      this.habitModalMode = 'edit'
+      this.selectedHabit = { ...habit }
+      this.showHabitModal = true
+    },
+    closeHabitModal() {
+      this.showHabitModal = false
+      this.selectedHabit = null
+      this.store?.initFromStorage?.()
+    },
+    handleHabitSave(payload) {
+      if (this.habitModalMode === 'create') {
+        this.store?.addHabit?.(payload.name, '', 'custom', payload.category, payload.isDaily, payload.days)
+      } else if (this.selectedHabit) {
+        this.store?.editHabit?.(this.selectedHabit.id, {
+          name: payload.name,
+          category: payload.category,
+          isDaily: payload.isDaily,
+          days: payload.days
+        })
+      }
+      this.closeHabitModal()
+    },
+
+    openTaskModalCreate() {
+      this.taskModalMode = 'create'
+      this.selectedTask = null
+      this.showTaskModal = true
+    },
+    openEditTask(task) {
+      this.taskModalMode = 'edit'
+      this.selectedTask = { ...task }
+      this.showTaskModal = true
+    },
+    closeTaskModal() {
+      this.showTaskModal = false
+      this.selectedTask = null
+      this.tasksStore?.initFromStorage?.()
+    },
     handleTaskSave(payload) {
       if (this.taskModalMode === 'create') {
         this.tasksStore?.addTask?.(payload)
       } else if (this.selectedTask) {
         this.tasksStore?.editTask?.(this.selectedTask.id, payload)
       }
-      this.onTaskModalClose()
-    }
+      this.closeTaskModal()
+    },
+
+    completeTask(id) { this.tasksStore?.completeTask?.(id) },
+    deleteTask(id) { this.tasksStore?.deleteTask?.(id) }
   }
 }
 </script>

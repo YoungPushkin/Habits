@@ -1,6 +1,6 @@
 <template>
-  <v-card class="hf-card" rounded="xl" elevation="0">
-    <v-card-text class="hf-base-card-body">
+  <v-card class="card" variant="tonal" elevation="0">
+    <v-card-text>
       <slot />
     </v-card-text>
   </v-card>

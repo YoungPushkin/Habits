@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+import LoginView from '../views/authentication/LoginView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import HabitsView from '../views/HabitsView.vue'
 import TasksView from '../views/TasksView.vue'
@@ -9,7 +10,16 @@ import SettingsView from '../views/SettingsView.vue'
 const routes = [
   {
     path: '/',
-    redirect: { name: 'dashboard' }
+    redirect: () => {
+      const isLoggedIn = !!localStorage.getItem('current_user_email')
+      return isLoggedIn ? { name: 'dashboard' } : { name: 'login' }
+    }
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: LoginView,
+    meta: { requiresAuth: false }
   },
   {
     path: '/dashboard',
@@ -49,12 +59,10 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  if (!to.meta.requiresAuth) return true
-
   const isLoggedIn = !!localStorage.getItem('current_user_email')
-  if (!isLoggedIn) {
-    return { path: '/' }
-  }
+
+  if (to.name === 'login' && isLoggedIn) return { name: 'dashboard' }
+  if (to.meta.requiresAuth && !isLoggedIn) return { name: 'login' }
 
   return true
 })

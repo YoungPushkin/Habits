@@ -1,9 +1,9 @@
 <template>
-  <section class="tasks app-page">
-    <div class="page-header">
+  <section class="app-page">
+    <div class="page-head">
       <div class="page-title">
-        <h1 class="t-h1">Tasks</h1>
-        <p class="t-subtitle">Plan and complete your key actions.</p>
+        <h1 class="t-h1 text-gold">Tasks</h1>
+        <p class="t-sub text-gold">Plan and complete your key actions.</p>
       </div>
 
       <div class="page-actions">
@@ -24,8 +24,8 @@
       You have no active tasks yet. Create your first task to start moving forward.
     </v-alert>
 
-    <div v-else class="task-groups">
-      <v-card v-if="activeHigh.length" class="hf-card mb-4" variant="tonal">
+    <div v-else>
+      <v-card v-if="activeHigh.length" class="card mb-4" variant="tonal">
         <v-card-title class="d-flex align-center justify-space-between flex-wrap ga-2">
           <v-chip size="small" variant="tonal" color="error">High priority</v-chip>
           <v-chip size="small" variant="tonal" color="primary">{{ activeHigh.length }} tasks</v-chip>
@@ -34,7 +34,7 @@
         <v-divider />
 
         <v-card-text class="pt-4">
-          <div class="task-group-body">
+          <div class="stack">
             <TaskCard
               v-for="t in activeHigh"
               :key="t.id"
@@ -47,7 +47,7 @@
         </v-card-text>
       </v-card>
 
-      <v-card v-if="activeMedium.length" class="hf-card mb-4" variant="tonal">
+      <v-card v-if="activeMedium.length" class="card mb-4" variant="tonal">
         <v-card-title class="d-flex align-center justify-space-between flex-wrap ga-2">
           <v-chip size="small" variant="tonal" color="warning">Medium priority</v-chip>
           <v-chip size="small" variant="tonal" color="primary">{{ activeMedium.length }} tasks</v-chip>
@@ -56,7 +56,7 @@
         <v-divider />
 
         <v-card-text class="pt-4">
-          <div class="task-group-body">
+          <div class="stack">
             <TaskCard
               v-for="t in activeMedium"
               :key="t.id"
@@ -69,7 +69,7 @@
         </v-card-text>
       </v-card>
 
-      <v-card v-if="activeLow.length" class="hf-card" variant="tonal">
+      <v-card v-if="activeLow.length" class="card" variant="tonal">
         <v-card-title class="d-flex align-center justify-space-between flex-wrap ga-2">
           <v-chip size="small" variant="tonal" color="info">Low priority</v-chip>
           <v-chip size="small" variant="tonal" color="primary">{{ activeLow.length }} tasks</v-chip>
@@ -78,7 +78,7 @@
         <v-divider />
 
         <v-card-text class="pt-4">
-          <div class="task-group-body">
+          <div class="stack">
             <TaskCard
               v-for="t in activeLow"
               :key="t.id"
@@ -123,18 +123,10 @@ export default {
     this.store.initFromStorage?.()
   },
   computed: {
-    hasActive() {
-      return !!this.store?.hasActive
-    },
-    activeHigh() {
-      return this.store?.activeHigh || []
-    },
-    activeMedium() {
-      return this.store?.activeMedium || []
-    },
-    activeLow() {
-      return this.store?.activeLow || []
-    }
+    hasActive() { return !!this.store?.hasActive },
+    activeHigh() { return this.store?.activeHigh || [] },
+    activeMedium() { return this.store?.activeMedium || [] },
+    activeLow() { return this.store?.activeLow || [] }
   },
   methods: {
     openCreate() {
@@ -154,27 +146,12 @@ export default {
     },
     handleTaskSave(payload) {
       if (!this.store) return
-      if (this.taskModalMode === 'create') {
-        this.store.addTask(payload)
-      } else if (this.selectedTask) {
-        this.store.editTask(this.selectedTask.id, payload)
-      }
+      if (this.taskModalMode === 'create') this.store.addTask(payload)
+      else if (this.selectedTask) this.store.editTask(this.selectedTask.id, payload)
       this.onTaskModalClose()
     },
-    completeTask(id) {
-      this.store?.completeTask?.(id)
-    },
-    deleteTask(id) {
-      this.store?.deleteTask?.(id)
-    }
+    completeTask(id) { this.store?.completeTask?.(id) },
+    deleteTask(id) { this.store?.deleteTask?.(id) }
   }
 }
 </script>
-
-<style scoped>
-.task-group-body {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-</style>

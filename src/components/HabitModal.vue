@@ -1,14 +1,14 @@
 <template>
   <v-dialog :model-value="true" max-width="520" @update:modelValue="$emit('close')">
-    <v-card class="hf-modal-card" rounded="xl">
-      <v-card-title class="hf-modal-title d-flex align-center justify-space-between">
+    <v-card class="modal" rounded="xl">
+      <v-card-title class="modal-pad-title d-flex align-center justify-space-between">
         <span class="t-h2">{{ mode === 'create' ? 'Create habit' : 'Edit habit' }}</span>
-        <v-btn class="hf-icon-btn" icon variant="text" @click="$emit('close')">
+        <v-btn class="icon-close" icon variant="text" @click="$emit('close')">
           <i class="bi bi-x-lg"></i>
         </v-btn>
       </v-card-title>
 
-      <v-card-text class="hf-modal-body pt-2">
+      <v-card-text class="modal-pad-body pt-2">
         <div class="d-flex flex-column ga-4">
           <div>
             <div class="t-label mb-2">Name</div>
@@ -25,7 +25,7 @@
                   :color="localForm.category === c.value ? 'primary' : undefined"
                   @click="localForm.category = c.value"
                 >
-                  <span class="me-2" :style="{width:'10px',height:'10px',borderRadius:'999px',background:c.color,display:'inline-block'}"></span>
+                  <span :style="{width:'10px',height:'10px',borderRadius:'999px',background:c.color,display:'inline-block',marginRight:'8px'}"></span>
                   {{ c.label }}
                 </v-btn>
               </v-col>
@@ -57,7 +57,7 @@
         </div>
       </v-card-text>
 
-      <v-card-actions class="hf-modal-actions justify-end d-flex">
+      <v-card-actions class="modal-pad-actions justify-end d-flex">
         <v-btn variant="text" @click="$emit('close')">Cancel</v-btn>
         <v-btn color="primary" variant="flat" @click="onSave">
           {{ mode === 'create' ? 'Save habit' : 'Save changes' }}
@@ -70,7 +70,10 @@
 <script>
 export default {
   name: 'HabitModal',
-  props: { mode: { type: String, default: 'create' }, habit: { type: Object, default: null } },
+  props: {
+    mode: { type: String, default: 'create' },
+    habit: { type: Object, default: null }
+  },
   emits: ['close', 'save'],
   data() {
     return {

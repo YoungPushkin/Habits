@@ -1,5 +1,5 @@
 <template>
-  <v-card class="hf-card" variant="tonal">
+  <v-card class="card" variant="tonal">
     <v-card-title class="d-flex align-center justify-space-between">
       <v-btn variant="tonal" icon size="small" @click="prevMonth">
         <v-icon icon="mdi-chevron-left" />
@@ -17,35 +17,25 @@
     <v-divider />
 
     <v-card-text class="pt-4">
-      <!-- Weekdays -->
-      <v-row class="cal-weekdays" dense>
-        <v-col v-for="d in weekdays" :key="d" cols="12" sm="auto" class="cal-weekday-col">
-          <div class="cal-weekday">{{ d }}</div>
-        </v-col>
-      </v-row>
+      <div class="cal-weekdays">
+        <div v-for="d in weekdays" :key="d" class="cal-weekday">{{ d }}</div>
+      </div>
 
-      <!-- Grid -->
-      <v-row class="cal-grid" dense>
-        <v-col
+      <div class="cal-grid">
+        <v-btn
           v-for="cell in cells"
           :key="cell.key"
-          cols="12"
-          sm="auto"
-          class="cal-cell-col"
+          block
+          :disabled="!cell.inMonth"
+          :variant="cellVariant(cell)"
+          :color="cellColor(cell)"
+          :class="cellBtnClass(cell)"
+          size="small"
+          @click="selectCell(cell)"
         >
-          <v-btn
-            block
-            :disabled="!cell.inMonth"
-            :variant="cellVariant(cell)"
-            :color="cellColor(cell)"
-            :class="cellBtnClass(cell)"
-            size="small"
-            @click="selectCell(cell)"
-          >
-            {{ cell.day }}
-          </v-btn>
-        </v-col>
-      </v-row>
+          {{ cell.day }}
+        </v-btn>
+      </div>
     </v-card-text>
   </v-card>
 </template>
@@ -82,9 +72,8 @@ export default {
       const last = new Date(this.currentYear, this.currentMonth + 1, 0)
       const daysInMonth = last.getDate()
 
-      // Monday-start calendar
-      const jsDay = first.getDay() // 0..6 (Sun..Sat)
-      const offset = (jsDay + 6) % 7 // -> 0..6 (Mon..Sun)
+      const jsDay = first.getDay()
+      const offset = (jsDay + 6) % 7
 
       const total = 42
       const out = []
@@ -152,7 +141,6 @@ export default {
       if (!cell.inMonth) return
       this.$emit('update:modelValue', cell.iso)
     },
-
     cellVariant(cell) {
       if (!cell.inMonth) return 'text'
       if (this.isSelected(cell)) return 'flat'
@@ -174,48 +162,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-
-.cal-title {
-  font-family: "Playfair Display", serif;
-  font-size: 16px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-
-
-.cal-weekdays,
-.cal-grid {
-  margin: 0;
-}
-
-.cal-weekday-col,
-.cal-cell-col {
-  flex: 0 0 calc(100% / 7);
-  max-width: calc(100% / 7);
-}
-
-.cal-weekday {
-  text-align: center;
-  font-size: 12px;
-  color: rgba(245, 245, 245, 0.55);
-  padding: 6px 0;
-}
-
-
-.cal-empty {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.cal-selected :deep(.v-btn__content) {
-  color: #050505;
-  font-weight: 700;
-}
-
-@media (max-width: 520px) {
-  .cal-title { font-size: 15px; }
-}
-</style>

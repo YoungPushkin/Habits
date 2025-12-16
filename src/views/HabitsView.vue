@@ -1,9 +1,9 @@
 <template>
-  <section class="habits app-page">
-    <div class="page-header">
+  <section class="app-page">
+    <div class="page-head">
       <div class="page-title">
-        <h1 class="t-h1">Habits</h1>
-        <p class="t-subtitle">Create, edit and manage your habits.</p>
+        <h1 class="t-h1 text-gold">Habits</h1>
+        <p class="t-sub text-gold">Create, edit and manage your habits.</p>
       </div>
 
       <v-chip size="small" variant="tonal" color="primary">
@@ -12,14 +12,14 @@
     </div>
 
     <div class="page-actions">
-      <v-btn class="hf-primary-btn" color="primary" variant="flat" rounded="pill" @click="openCreateHabit">
+      <v-btn class="btn-primary" variant="flat" rounded="pill" @click="openCreateHabit">
         Add habit
       </v-btn>
     </div>
 
-    <v-card class="hf-card" variant="tonal">
-      <v-card-title class="d-flex align-center justify-space-between">
-        <div class="t-h2">All habits</div>
+    <v-card class="card" variant="tonal">
+      <v-card-title>
+        <div class="t-h2 text-silver">All habits</div>
       </v-card-title>
 
       <v-divider />
@@ -29,7 +29,7 @@
           No habits yet. Click "Add habit" to create one.
         </div>
 
-        <div v-else class="habit-list">
+        <div v-else class="stack">
           <HabitCard
             v-for="h in habits"
             :key="h.id"
@@ -59,10 +59,7 @@ import { useHabitsStore } from '../stores/habits'
 
 export default {
   name: 'HabitsView',
-  components: {
-    HabitCard,
-    HabitModal
-  },
+  components: { HabitCard, HabitModal },
   data() {
     return {
       store: null,
@@ -100,15 +97,8 @@ export default {
       if (!this.store) return
 
       if (this.habitModalMode === 'create') {
-        this.store.addHabit(
-          payload.name,
-          '',
-          'custom',
-          payload.category,
-          payload.isDaily,
-          payload.days
-        )
-      } else if (this.habitModalMode === 'edit' && this.selectedHabit) {
+        this.store.addHabit(payload.name, '', 'custom', payload.category, payload.isDaily, payload.days)
+      } else if (this.selectedHabit) {
         this.store.editHabit(this.selectedHabit.id, {
           name: payload.name,
           category: payload.category,
@@ -124,9 +114,7 @@ export default {
     },
     deleteHabit(id) {
       this.store?.deleteHabit?.(id)
-      if (this.selectedHabit && this.selectedHabit.id === id) {
-        this.onHabitModalClose()
-      }
+      if (this.selectedHabit && this.selectedHabit.id === id) this.onHabitModalClose()
     }
   }
 }
