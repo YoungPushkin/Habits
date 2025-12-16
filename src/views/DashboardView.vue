@@ -101,50 +101,22 @@
         <v-divider />
 
         <v-card-text>
-          <v-list lines="two" class="hf-list" density="comfortable">
-            <v-list-item v-if="store.habits.length === 0">
-              <v-list-item-title class="t-body">No habits yet</v-list-item-title>
-            </v-list-item>
+          <div v-if="store.habits.length === 0" class="t-body">
+            No habits yet
+          </div>
 
-            <v-list-item v-for="h in store.habits" :key="h.id">
-              <template #prepend>
-                <v-btn
-                  icon
-                  size="small"
-                  variant="tonal"
-                  color="primary"
-                  @click="toggleHabitDone(h.id)"
-                >
-                  <i v-if="h.doneToday" class="bi bi-check-lg"></i>
-                  <i v-else class="bi bi-circle"></i>
-                </v-btn>
+          <div v-else>
+            <HfCarousel :items="store.habits" slide-width="380px">
+              <template #default="{ item }">
+                <HabitCard
+                  :habit="item"
+                  mode="today"
+                  @toggle="toggleHabitDone"
+                  @delete="removeHabit"
+                />
               </template>
-
-              <v-list-item-title class="t-body">{{ h.name }}</v-list-item-title>
-              <v-list-item-subtitle class="t-caption">{{ h.meta }}</v-list-item-subtitle>
-
-              <template #append>
-                <div class="d-flex align-center ga-2">
-                  <v-btn
-                    size="small"
-                    variant="tonal"
-                    color="primary"
-                    @click="removeHabit(h.id)"
-                  >
-                    Remove
-                  </v-btn>
-
-                  <v-chip
-                    size="small"
-                    variant="tonal"
-                    :color="h.doneToday ? 'success' : 'warning'"
-                  >
-                    {{ h.doneToday ? 'Done' : 'Pending' }}
-                  </v-chip>
-                </div>
-              </template>
-            </v-list-item>
-          </v-list>
+            </HfCarousel>
+          </div>
         </v-card-text>
       </v-card>
 
@@ -159,12 +131,12 @@
         <v-divider />
 
         <v-card-text class="d-flex flex-column ga-3">
-          <v-btn color="primary" variant="flat" rounded="pill" @click="openTaskModal">
+          <v-btn class="hf-primary-btn" variant="flat" rounded="pill" @click="openTaskModal">
             <i class="bi bi-clipboard-plus" style="margin-right:10px;"></i>
             Add task
           </v-btn>
 
-          <v-btn color="primary" variant="tonal" rounded="pill" @click="openHabitModal">
+          <v-btn class="hf-primary-btn" variant="flat" rounded="pill" @click="openHabitModal">
             <i class="bi bi-plus-lg" style="margin-right:10px;"></i>
             Add habit
           </v-btn>
@@ -174,7 +146,7 @@
 
     <div class="bottom-row">
       <v-card class="hf-card" variant="tonal">
-        <v-card-title>
+        <v-card-title class="d-flex align-center justify-space-between flex-wrap ga-2">
           <div>
             <div class="t-h2">Important timeline</div>
             <div class="t-subtitle">High priority and near deadlines.</div>
@@ -193,31 +165,18 @@
             No important tasks right now.
           </v-alert>
 
-          <v-list v-else density="comfortable" class="hf-list">
-            <v-list-item v-for="t in importantTasks" :key="t.id">
-              <v-list-item-title class="t-body">{{ t.title }}</v-list-item-title>
-
-              <template #append>
-                <div class="d-flex align-center ga-2">
-                  <v-chip
-                    size="small"
-                    variant="tonal"
-                    :class="priorityClass(t.priority)"
-                  >
-                    {{ priorityLabel(t.priority) }}
-                  </v-chip>
-
-                  <v-chip
-                    size="small"
-                    variant="tonal"
-                    :class="deadlineChipClass(t)"
-                  >
-                    {{ deadlineText(t) }}
-                  </v-chip>
-                </div>
+          <div v-else>
+            <HfCarousel :items="importantTasks" slide-width="420px">
+              <template #default="{ item }">
+                <TaskCard
+                  :task="item"
+                  @complete="completeTask"
+                  @edit="openEditTask"
+                  @delete="deleteTask"
+                />
               </template>
-            </v-list-item>
-          </v-list>
+            </HfCarousel>
+          </div>
         </v-card-text>
       </v-card>
     </div>
@@ -230,6 +189,8 @@
 
     <TaskModal
       v-if="showTaskModal"
+      :mode="taskModalMode"
+      :task="selectedTask"
       @close="onTaskModalClose"
       @save="handleTaskSave"
     />
@@ -239,18 +200,23 @@
 <script>
 import { useHabitsStore } from '../stores/habits'
 import { useTasksStore } from '../stores/tasks'
-import HabitModal from '../components/layout/HabitModal.vue'
-import TaskModal from '../components/layout/TaskModal.vue'
+import HabitModal from '../components/HabitModal.vue'
+import TaskModal from '../components/TaskModal.vue'
+import HabitCard from '../components/HabitCard.vue'
+import TaskCard from '../components/TaskCard.vue'
+import HfCarousel from '../components/layout/HfCarousel.vue'
 
 export default {
   name: 'DashboardView',
-  components: { HabitModal, TaskModal },
+  components: { HabitModal, TaskModal, HabitCard, TaskCard, HfCarousel },
   data() {
     return {
       store: useHabitsStore(),
       tasksStore: useTasksStore(),
       showHabitModal: false,
-      showTaskModal: false
+      showTaskModal: false,
+      taskModalMode: 'create',
+      selectedTask: null
     }
   },
   created() {
@@ -314,46 +280,24 @@ export default {
     toggleHabitDone(id) { this.store?.toggleHabit?.(id) },
     removeHabit(id) { this.store?.deleteHabit?.(id) },
     openHabitModal() { this.showHabitModal = true },
-    openTaskModal() { this.showTaskModal = true },
+    openTaskModal() { this.taskModalMode = 'create'; this.selectedTask = null; this.showTaskModal = true },
     onHabitModalClose() { this.showHabitModal = false; this.store?.initFromStorage?.() },
-    onTaskModalClose() { this.showTaskModal = false; this.tasksStore?.initFromStorage?.() },
+    onTaskModalClose() { this.showTaskModal = false; this.selectedTask = null; this.tasksStore?.initFromStorage?.() },
     handleTaskSave(payload) { this.tasksStore?.addTask?.(payload); this.onTaskModalClose() },
     handleHabitSave(payload) {
       this.store?.addHabit?.(payload.name, '', 'custom', payload.category, payload.isDaily, payload.days)
       this.onHabitModalClose()
     },
-    priorityLabel(p) {
-      if (p === 'high') return 'High'
-      if (p === 'medium') return 'Medium'
-      if (p === 'low') return 'Low'
-      return 'Task'
-    },
-    priorityClass(p) {
-      if (p === 'high') return 'hf-priority-high'
-      if (p === 'medium') return 'hf-priority-medium'
-      return 'hf-priority-low'
-    },
-    deadlineChipClass(t) {
-      const diff = typeof t._diff === 'number' ? t._diff : this.diffDays(t.deadlineDate)
-      if (isNaN(diff)) return 'hf-deadline-normal'
-      if (diff < 0) return 'hf-deadline-overdue'
-      if (diff <= 2) return 'hf-deadline-soon'
-      return 'hf-deadline-normal'
-    },
-    deadlineText(t) {
-      const diff = typeof t._diff === 'number' ? t._diff : this.diffDays(t.deadlineDate)
-      if (isNaN(diff)) return 'No deadline'
-      if (diff < 0) return `Overdue ${Math.abs(diff)} d`
-      if (diff === 0) return 'Today'
-      return `In ${diff} d`
-    },
-    diffDays(dateStr) {
-      if (!dateStr) return NaN
-      const due = new Date(dateStr + 'T00:00:00')
-      if (isNaN(due.getTime())) return NaN
-      const now = new Date()
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-      return Math.round((due - today) / (1000 * 60 * 60 * 24))
+    completeTask(id) { this.tasksStore?.completeTask?.(id) },
+    deleteTask(id) { this.tasksStore?.deleteTask?.(id) },
+    openEditTask(task) { this.taskModalMode = 'edit'; this.selectedTask = { ...task }; this.showTaskModal = true },
+    handleTaskSave(payload) {
+      if (this.taskModalMode === 'create') {
+        this.tasksStore?.addTask?.(payload)
+      } else if (this.selectedTask) {
+        this.tasksStore?.editTask?.(this.selectedTask.id, payload)
+      }
+      this.onTaskModalClose()
     }
   }
 }

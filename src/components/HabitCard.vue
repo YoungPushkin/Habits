@@ -53,7 +53,7 @@
       <div class="d-flex align-center justify-space-between ga-3">
         <v-list-item class="px-0" lines="two">
           <template #prepend>
-            <v-checkbox-btn
+            <v-checkbox-btn class="btn"
               :model-value="habit.doneToday"
               @update:model-value="toggle"
             />
@@ -65,7 +65,6 @@
 
           <template #subtitle>
             <span v-if="habit.createdAt" class="t-caption">
-              Created: {{ formatDate(habit.createdAt) }}
             </span>
           </template>
         </v-list-item>

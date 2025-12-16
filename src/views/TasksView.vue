@@ -103,8 +103,8 @@
 </template>
 
 <script>
-import TaskCard from '../components/layout/TaskCard.vue'
-import TaskModal from '../components/layout/TaskModal.vue'
+import TaskCard from '../components/TaskCard.vue'
+import TaskModal from '../components/TaskModal.vue'
 import { useTasksStore } from '../stores/tasks.js'
 
 export default {

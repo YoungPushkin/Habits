@@ -68,7 +68,7 @@
 </template>
 
 <script>
-import CalendarPicker from '../layout/CalendarPicker.vue'
+import CalendarPicker from '../components/layout/CalendarPicker.vue'
 
 export default {
   name: 'TaskModal',

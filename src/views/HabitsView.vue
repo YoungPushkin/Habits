@@ -12,7 +12,7 @@
     </div>
 
     <div class="page-actions">
-      <v-btn color="primary" variant="flat" rounded="pill" @click="openCreateHabit">
+      <v-btn class="hf-primary-btn" color="primary" variant="flat" rounded="pill" @click="openCreateHabit">
         Add habit
       </v-btn>
     </div>
@@ -53,8 +53,8 @@
 </template>
 
 <script>
-import HabitCard from '../components/layout/HabitCard.vue'
-import HabitModal from '../components/layout/HabitModal.vue'
+import HabitCard from '../components/HabitCard.vue'
+import HabitModal from '../components/HabitModal.vue'
 import { useHabitsStore } from '../stores/habits'
 
 export default {

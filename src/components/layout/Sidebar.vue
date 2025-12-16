@@ -85,11 +85,6 @@ export default {
 </script>
 
 <style scoped>
-.hf-drawer {
-  border-right: 1px solid rgba(212, 175, 55, 0.25);
-  backdrop-filter: blur(12px);
-  background: rgba(5, 5, 5, 0.88);
-}
 
 .hf-brand {
   font-family: "Playfair Display", serif;
