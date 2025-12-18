@@ -1,3 +1,15 @@
+<script>
+import habitsMixin from '../Mixins/HabitsView.mixin'
+import HabitCard from '../components/HabitCard.vue'
+import HabitModal from '../components/HabitModal.vue'
+
+export default {
+  name: 'HabitsView',
+  mixins: [habitsMixin],
+  components: { HabitCard, HabitModal }
+}
+</script>
+
 <template>
   <section class="habits app-page">
     <div class="page-head">
@@ -54,68 +66,4 @@
   </section>
 </template>
 
-<script>
-import HabitCard from '../components/HabitCard.vue'
-import HabitModal from '../components/HabitModal.vue'
-import { useHabitsStore } from '../stores/habits'
 
-export default {
-  name: 'HabitsView',
-  components: { HabitCard, HabitModal },
-  data() {
-    return {
-      store: null,
-      showHabitModal: false,
-      habitModalMode: 'create',
-      selectedHabit: null
-    }
-  },
-  created() {
-    this.store = useHabitsStore()
-    this.store.initFromStorage?.()
-  },
-  computed: {
-    habitsUI() {
-      if (!this.store) return []
-      const map = this.store.todayDoneMap || {}
-      return (this.store.habits || []).map(h => ({
-        ...h,
-        dueToday: this.store.isHabitDueToday(h),
-        doneToday: !!map[h.id]
-      }))
-    }
-  },
-  methods: {
-    openCreateHabit() {
-      this.habitModalMode = 'create'
-      this.selectedHabit = null
-      this.showHabitModal = true
-    },
-    openEditHabit(habit) {
-      this.habitModalMode = 'edit'
-      this.selectedHabit = { ...habit }
-      this.showHabitModal = true
-    },
-    onHabitModalClose() {
-      this.showHabitModal = false
-      this.selectedHabit = null
-      this.store?.initFromStorage?.()
-    },
-    handleHabitSave(payload) {
-      if (!this.store) return
-      if (this.habitModalMode === 'create') this.store.addHabit(payload)
-      else if (this.selectedHabit) this.store.editHabit(this.selectedHabit.id, payload)
-      this.onHabitModalClose()
-    },
-    toggleHabit(id) {
-      this.store?.toggleHabitDoneToday?.(id)
-      this.store?.initFromStorage?.()
-    },
-    deleteHabit(id) {
-      this.store?.deleteHabit?.(id)
-      if (this.selectedHabit && this.selectedHabit.id === id) this.onHabitModalClose()
-      else this.store?.initFromStorage?.()
-    }
-  }
-}
-</script>

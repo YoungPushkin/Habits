@@ -1,3 +1,15 @@
+<script>
+import tasksMixin from '../Mixins/TasksView.mixin'
+import TaskCard from '../components/TaskCard.vue'
+import TaskModal from '../components/TaskModal.vue'
+
+export default {
+  name: 'TasksView',
+  mixins: [tasksMixin],
+  components: { TaskCard, TaskModal }
+}
+</script>
+
 <template>
   <section class="app-page">
     <div class="page-head">
@@ -102,56 +114,4 @@
   </section>
 </template>
 
-<script>
-import TaskCard from '../components/TaskCard.vue'
-import TaskModal from '../components/TaskModal.vue'
-import { useTasksStore } from '../stores/tasks.js'
 
-export default {
-  name: 'TasksView',
-  components: { TaskCard, TaskModal },
-  data() {
-    return {
-      store: null,
-      showTaskModal: false,
-      taskModalMode: 'create',
-      selectedTask: null
-    }
-  },
-  created() {
-    this.store = useTasksStore()
-    this.store.initFromStorage?.()
-  },
-  computed: {
-    hasActive() { return !!this.store?.hasActive },
-    activeHigh() { return this.store?.activeHigh || [] },
-    activeMedium() { return this.store?.activeMedium || [] },
-    activeLow() { return this.store?.activeLow || [] }
-  },
-  methods: {
-    openCreate() {
-      this.taskModalMode = 'create'
-      this.selectedTask = null
-      this.showTaskModal = true
-    },
-    openEdit(task) {
-      this.taskModalMode = 'edit'
-      this.selectedTask = { ...task }
-      this.showTaskModal = true
-    },
-    onTaskModalClose() {
-      this.showTaskModal = false
-      this.selectedTask = null
-      this.store?.initFromStorage?.()
-    },
-    handleTaskSave(payload) {
-      if (!this.store) return
-      if (this.taskModalMode === 'create') this.store.addTask(payload)
-      else if (this.selectedTask) this.store.editTask(this.selectedTask.id, payload)
-      this.onTaskModalClose()
-    },
-    completeTask(id) { this.store?.completeTask?.(id) },
-    deleteTask(id) { this.store?.deleteTask?.(id) }
-  }
-}
-</script>

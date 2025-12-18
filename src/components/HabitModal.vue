@@ -127,7 +127,7 @@ export default {
       form: {
         name: '',
         category: 'other',
-        daysIdx: [] // выбранные дни индексами 0..6
+        daysIdx: [] 
       }
     }
   },
@@ -205,7 +205,7 @@ export default {
       }
 
       const days = isDaily
-        ? [false, false, false, false, false, false, false] // для daily дни не нужны
+        ? [false, false, false, false, false, false, false] 
         : this.toDaysBool(this.form.daysIdx)
 
       this.$emit('save', {

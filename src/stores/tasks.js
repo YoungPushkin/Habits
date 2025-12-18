@@ -1,9 +1,5 @@
 import { defineStore } from 'pinia'
-
-function todayISO() {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
+import { isoToday, startOfDay, startOfWeekMonday, addDays, monthKey } from '../stores/utils/date'
 
 export const useTasksStore = defineStore('tasks', {
   state: () => ({
@@ -15,6 +11,14 @@ export const useTasksStore = defineStore('tasks', {
     hasActive(state) {
       return state.tasks.some(t => t.status === 'active')
     },
+
+    activeTasks(state) {
+      return state.tasks.filter(t => t.status === 'active')
+    },
+    completedTasks(state) {
+      return state.tasks.filter(t => t.status === 'done')
+    },
+
     activeHigh(state) {
       return state.tasks.filter(t => t.status === 'active' && t.priority === 'high')
     },
@@ -24,11 +28,111 @@ export const useTasksStore = defineStore('tasks', {
     activeLow(state) {
       return state.tasks.filter(t => t.status === 'active' && t.priority === 'low')
     },
-    activeTasks(state) {
-      return state.tasks.filter(t => t.status === 'active')
+
+    countsByPriority() {
+      return {
+        high: this.activeHigh.length,
+        medium: this.activeMedium.length,
+        low: this.activeLow.length,
+        total: this.activeHigh.length + this.activeMedium.length + this.activeLow.length
+      }
     },
-    completedTasks(state) {
-      return state.tasks.filter(t => t.status === 'done')
+
+    completionPercent() {
+      const total = this.activeTasks.length + this.completedTasks.length
+      return total === 0 ? 0 : Math.round((this.completedTasks.length / total) * 100)
+    },
+
+    monthStats(state) {
+      const now = new Date()
+      const y = now.getFullYear()
+      const m = now.getMonth()
+
+      const monthTasks = state.tasks.filter(t => {
+        if (!t.deadlineDate) return false
+        const d = new Date(t.deadlineDate + 'T00:00:00')
+        return d.getFullYear() === y && d.getMonth() === m
+      })
+
+      const total = monthTasks.length
+      const done = monthTasks.filter(t => t.status === 'done').length
+      const percent = total === 0 ? 0 : Math.round((done / total) * 100)
+
+      return { total, done, percent }
+    },
+
+    importantTasks(state) {
+      const tasks = state.tasks || []
+      const today = startOfDay(new Date())
+
+      return tasks
+        .filter(t => t.status === 'active' && t.deadlineDate)
+        .map(t => {
+          const due = new Date(t.deadlineDate + 'T00:00:00')
+          const diff = Math.round((due - today) / 86400000)
+          return { ...t, _diff: diff }
+        })
+        .filter(t => t.priority === 'high' || t._diff <= 3)
+        .sort((a, b) => {
+          if (a.priority === 'high' && b.priority !== 'high') return -1
+          if (a.priority !== 'high' && b.priority === 'high') return 1
+          return a._diff - b._diff
+        })
+    },
+
+    weeklyCompleted(state) {
+      const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      const monday = startOfWeekMonday(new Date())
+      const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i))
+      const isoDays = days.map(d => {
+        const y = d.getFullYear()
+        const m = String(d.getMonth() + 1).padStart(2, '0')
+        const day = String(d.getDate()).padStart(2, '0')
+        return `${y}-${m}-${day}`
+      })
+
+      const done = (state.tasks || []).filter(t => t.status === 'done' && t.completedAt)
+      const map = Object.create(null)
+
+      for (const t of done) {
+        const key = t.completedAt
+        map[key] = (map[key] || 0) + 1
+      }
+
+      return isoDays.map((iso, i) => ({ day: labels[i], count: map[iso] || 0 }))
+    },
+
+    mostProductiveDay() {
+      const list = this.weeklyCompleted || []
+      if (!list.length) return 'None'
+      const max = list.reduce((a, b) => (b.count > a.count ? b : a), list[0])
+      return max.count === 0 ? 'None' : max.day
+    },
+
+    monthlyHistory(state) {
+      const now = new Date()
+      const first = new Date(now.getFullYear(), now.getMonth(), 1)
+
+      const months = Array.from({ length: 6 }, (_, i) => {
+        const d = new Date(first)
+        d.setMonth(d.getMonth() - (5 - i))
+        return d
+      })
+
+      const labels = months.map(d => d.toLocaleString('en-US', { month: 'short' }))
+      const keys = months.map(d => monthKey(d))
+
+      const done = (state.tasks || []).filter(t => t.status === 'done' && t.completedAt)
+      const map = Object.create(null)
+
+      for (const t of done) {
+        const d = new Date(t.completedAt + 'T00:00:00')
+        if (Number.isNaN(d.getTime())) continue
+        const k = monthKey(d)
+        map[k] = (map[k] || 0) + 1
+      }
+
+      return keys.map((k, i) => ({ label: labels[i], count: map[k] || 0 }))
     }
   },
 
@@ -52,11 +156,10 @@ export const useTasksStore = defineStore('tasks', {
         if (Array.isArray(parsed)) {
           this.tasks = parsed.map(t => {
             const status = t.status || 'active'
-
-            // ✅ МИГРАЦИЯ: если задача уже done, но completedAt пустой — заполняем
             let completedAt = t.completedAt || ''
+
             if (status === 'done' && !completedAt) {
-              completedAt = t.deadlineDate || todayISO()
+              completedAt = t.deadlineDate || isoToday()
             }
 
             return {
@@ -71,8 +174,6 @@ export const useTasksStore = defineStore('tasks', {
 
           const maxId = this.tasks.reduce((m, t) => (t.id > m ? t.id : m), 0)
           this.nextId = maxId + 1
-
-          // ✅ сохраним миграцию обратно в localStorage
           this.saveToStorage()
         } else {
           this.tasks = []
@@ -125,10 +226,8 @@ export const useTasksStore = defineStore('tasks', {
     completeTask(id) {
       const t = this.tasks.find(x => x.id === id)
       if (!t) return
-
       t.status = 'done'
-      t.completedAt = todayISO() // ✅ история выполнений
-
+      t.completedAt = isoToday()
       this.saveToStorage()
     }
   }

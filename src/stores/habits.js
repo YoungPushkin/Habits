@@ -1,12 +1,5 @@
 import { defineStore } from 'pinia'
-
-function isoToday() {
-  const d = new Date()
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
+import { isoToday, startOfDay, addDays } from '../stores/utils/date'
 
 function weekIndex(date = new Date()) {
   const js = date.getDay()
@@ -53,6 +46,10 @@ export const useHabitsStore = defineStore('habits', {
         return Array.isArray(h.days) ? !!h.days[idx] : false
       })
     },
+    todayHabitsForUI() {
+      const map = this.todayDoneMap || {}
+      return (this.todayHabits || []).map(h => ({ ...h, doneToday: !!map[h.id] }))
+    },
     todayTotal() {
       return this.todayHabits.length
     },
@@ -69,6 +66,54 @@ export const useHabitsStore = defineStore('habits', {
     },
     activeDays(state) {
       return Object.keys(state.completedDays || {}).filter(d => state.completedDays[d]).length
+    },
+
+    habitsUI(state) {
+      const map = this.todayDoneMap || {}
+      const idx = this.todayWeekIdx
+      return (state.habits || []).map(h => {
+        const dueToday = h.isDaily ? true : (Array.isArray(h.days) ? !!h.days[idx] : false)
+        return { ...h, dueToday, doneToday: !!map[h.id] }
+      })
+    },
+
+    currentStreak(state) {
+      const today = this.todayISO
+      const completedDays = state.completedDays || {}
+
+      const dates = Object.keys(completedDays)
+        .filter(d => completedDays[d])
+        .sort()
+        .reverse()
+
+      if (!dates.length || dates[0] !== today) return 0
+
+      let streak = 1
+      for (let i = 1; i < dates.length; i++) {
+        const diff = Math.floor((new Date(dates[i - 1]) - new Date(dates[i])) / 86400000)
+        if (diff === 1) streak++
+        else break
+      }
+      return streak
+    },
+
+    averageWeekly(state) {
+      const completedDays = state.completedDays || {}
+      const today = startOfDay(new Date())
+      const from = addDays(today, -27)
+
+      let doneDays = 0
+      for (let i = 0; i < 28; i++) {
+        const iso = (() => {
+          const d = addDays(from, i)
+          const y = d.getFullYear()
+          const m = String(d.getMonth() + 1).padStart(2, '0')
+          const day = String(d.getDate()).padStart(2, '0')
+          return `${y}-${m}-${day}`
+        })()
+        if (completedDays[iso]) doneDays++
+      }
+      return Math.round((doneDays / 28) * 100)
     }
   },
 
