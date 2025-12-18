@@ -1,5 +1,5 @@
 <template>
-  <section class="app-page">
+  <section class="habits app-page">
     <div class="page-head">
       <div class="page-title">
         <h1 class="t-h1 text-gold">Habits</h1>
@@ -7,33 +7,35 @@
       </div>
 
       <v-chip size="small" variant="tonal" color="primary">
-        Total: {{ habits.length }}
+        Total: {{ habitsUI.length }}
       </v-chip>
     </div>
 
     <div class="page-actions">
-      <v-btn class="btn-primary" variant="flat" rounded="pill" @click="openCreateHabit">
+      <v-btn class="btn-primary" color="primary" variant="flat" rounded="pill" @click="openCreateHabit">
         Add habit
       </v-btn>
     </div>
 
     <v-card class="card" variant="tonal">
-      <v-card-title>
-        <div class="t-h2 text-silver">All habits</div>
+      <v-card-title class="d-flex align-center justify-space-between">
+        <div class="t-h2">All habits</div>
       </v-card-title>
 
       <v-divider />
 
       <v-card-text>
-        <div v-if="habits.length === 0" class="t-body">
+        <div v-if="habitsUI.length === 0" class="t-body">
           No habits yet. Click "Add habit" to create one.
         </div>
 
         <div v-else class="stack">
           <HabitCard
-            v-for="h in habits"
+            v-for="h in habitsUI"
             :key="h.id"
             :habit="h"
+            :done-today="h.doneToday"
+            :due-today="h.dueToday"
             @toggle="toggleHabit"
             @edit="openEditHabit"
             @delete="deleteHabit"
@@ -73,8 +75,14 @@ export default {
     this.store.initFromStorage?.()
   },
   computed: {
-    habits() {
-      return this.store ? this.store.habits : []
+    habitsUI() {
+      if (!this.store) return []
+      const map = this.store.todayDoneMap || {}
+      return (this.store.habits || []).map(h => ({
+        ...h,
+        dueToday: this.store.isHabitDueToday(h),
+        doneToday: !!map[h.id]
+      }))
     }
   },
   methods: {
@@ -95,26 +103,18 @@ export default {
     },
     handleHabitSave(payload) {
       if (!this.store) return
-
-      if (this.habitModalMode === 'create') {
-        this.store.addHabit(payload.name, '', 'custom', payload.category, payload.isDaily, payload.days)
-      } else if (this.selectedHabit) {
-        this.store.editHabit(this.selectedHabit.id, {
-          name: payload.name,
-          category: payload.category,
-          isDaily: payload.isDaily,
-          days: payload.days
-        })
-      }
-
+      if (this.habitModalMode === 'create') this.store.addHabit(payload)
+      else if (this.selectedHabit) this.store.editHabit(this.selectedHabit.id, payload)
       this.onHabitModalClose()
     },
     toggleHabit(id) {
-      this.store?.toggleHabit?.(id)
+      this.store?.toggleHabitDoneToday?.(id)
+      this.store?.initFromStorage?.()
     },
     deleteHabit(id) {
       this.store?.deleteHabit?.(id)
       if (this.selectedHabit && this.selectedHabit.id === id) this.onHabitModalClose()
+      else this.store?.initFromStorage?.()
     }
   }
 }

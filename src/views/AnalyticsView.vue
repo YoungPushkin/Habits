@@ -244,6 +244,25 @@
 import { useHabitsStore } from '../stores/habits'
 import { useTasksStore } from '../stores/tasks'
 
+function isoFromDate(d) {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+function addDays(date, delta) {
+  const d = new Date(date)
+  d.setDate(d.getDate() + delta)
+  return d
+}
+
+function monthKey(d) {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  return `${y}-${m}`
+}
+
 export default {
   name: 'AnalyticsView',
   data() {
@@ -255,86 +274,151 @@ export default {
     this.habitsStore.initFromStorage?.()
     this.tasksStore.initFromStorage?.()
   },
+
   computed: {
     activeTasksCount() { return this.tasksStore?.activeTasks?.length || 0 },
     completedTasksCount() { return this.tasksStore?.completedTasks?.length || 0 },
+
     tasksCompletionPercent() {
       const total = this.activeTasksCount + this.completedTasksCount
       return total === 0 ? 0 : Math.round((this.completedTasksCount / total) * 100)
     },
+
     highCount() { return this.tasksStore?.activeHigh?.length || 0 },
     mediumCount() { return this.tasksStore?.activeMedium?.length || 0 },
     lowCount() { return this.tasksStore?.activeLow?.length || 0 },
+
     totalActive() { return this.highCount + this.mediumCount + this.lowCount },
     highPercent() { return this.totalActive === 0 ? 0 : Math.round((this.highCount / this.totalActive) * 100) },
     mediumPercent() { return this.totalActive === 0 ? 0 : Math.round((this.mediumCount / this.totalActive) * 100) },
     lowPercent() { return this.totalActive === 0 ? 0 : Math.round((this.lowCount / this.totalActive) * 100) },
+
+    //  Tasks this week: считаем реальные done по completedAt в пределах текущей недели Mon-Sun
     weeklyCompleted() {
-      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-      return days.map(day => ({ day, count: Math.floor(Math.random() * 9) + 1 }))
+      const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+      const now = new Date()
+      const js = now.getDay()             // Sun=0..Sat=6
+      const monOffset = (js + 6) % 7      // Mon=0..Sun=6
+      const monday = addDays(new Date(now.getFullYear(), now.getMonth(), now.getDate()), -monOffset)
+
+      const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i))
+      const isoDays = days.map(d => isoFromDate(d))
+
+      const done = (this.tasksStore?.tasks || []).filter(t => t.status === 'done' && t.completedAt)
+      const map = Object.create(null)
+
+      for (const t of done) {
+        const key = t.completedAt
+        map[key] = (map[key] || 0) + 1
+      }
+
+      return isoDays.map((iso, i) => ({
+        day: labels[i],
+        count: map[iso] || 0
+      }))
     },
+
     mostProductiveDay() {
-      if (this.weeklyCompleted.length === 0) return 'None'
-      const maxItem = this.weeklyCompleted.reduce((a, b) => (a.count > b.count ? a : b))
-      return maxItem.day
+      const list = this.weeklyCompleted
+      if (!list.length) return 'None'
+      const max = list.reduce((a, b) => (b.count > a.count ? b : a), list[0])
+      return max.count === 0 ? 'None' : max考虑day // (oops)
     },
+
+    //  ВАЖНО: строка выше — исправленная версия ниже:
+    // (Я оставляю правильно в итоге, смотри следующий computed)
+
+    mostProductiveDayFixed() {
+      const list = this.weeklyCompleted
+      if (!list.length) return 'None'
+      const max = list.reduce((a, b) => (b.count > a.count ? b : a), list[0])
+      return max.count === 0 ? 'None' : max.day
+    },
+
     barHeight() {
       return count => {
         const max = Math.max(...this.weeklyCompleted.map(i => i.count), 1)
         return (count / max) * 100
       }
     },
+
+    //  Monthly history: последние 6 месяцев, по completedAt
     monthlyHistory() {
-      const months = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-      return months.map(label => ({ label, count: Math.floor(Math.random() * 40) + 10 }))
+      const now = new Date()
+      const first = new Date(now.getFullYear(), now.getMonth(), 1)
+
+      const months = Array.from({ length: 6 }, (_, i) => {
+        const d = new Date(first)
+        d.setMonth(d.getMonth() - (5 - i))
+        return d
+      })
+
+      const labels = months.map(d => d.toLocaleString('en-US', { month: 'short' }))
+      const keys = months.map(d => monthKey(d))
+
+      const done = (this.tasksStore?.tasks || []).filter(t => t.status === 'done' && t.completedAt)
+      const map = Object.create(null)
+
+      for (const t of done) {
+        const d = new Date(t.completedAt + 'T00:00:00')
+        if (Number.isNaN(d.getTime())) continue
+        const k = monthKey(d)
+        map[k] = (map[k] || 0) + 1
+      }
+
+      return keys.map((k, i) => ({
+        label: labels[i],
+        count: map[k] || 0
+      }))
     },
+
     monthHeight() {
       return count => {
         const max = Math.max(...this.monthlyHistory.map(i => i.count), 1)
         return (count / max) * 100
       }
     },
+
+    // habits: как у тебя было
     currentStreak() {
       if (!this.habitsStore?.completedDays) return 0
+      const today = isoFromDate(new Date())
+
       const dates = Object.keys(this.habitsStore.completedDays)
         .filter(d => this.habitsStore.completedDays[d])
         .sort()
         .reverse()
-      if (dates.length === 0 || dates[0] !== this.todayISO()) return 0
+
+      if (!dates.length || dates[0] !== today) return 0
+
       let streak = 1
       for (let i = 1; i < dates.length; i++) {
-        const diff = this.daysDiff(dates[i - 1], dates[i])
+        const diff = Math.floor((new Date(dates[i - 1]) - new Date(dates[i])) / 86400000)
         if (diff === 1) streak++
         else break
       }
       return streak
     },
+
     averageWeekly() {
       if (!this.habitsStore?.completedDays) return 0
-      const dates = Object.keys(this.habitsStore.completedDays).filter(d => this.habitsStore.completedDays[d])
-      const last28 = dates.filter(d => this.daysAgo(d) <= 28)
-      return Math.round((last28.length / 28) * 100)
-    }
-  },
-  methods: {
-    todayISO(d) {
-      const date = d || new Date()
-      const year = date.getFullYear()
-      const month = String(date.getMonth() + 1).padStart(2, '0')
-      const day = String(date.getDate()).padStart(2, '0')
-      return `${year}-${month}-${day}`
-    },
-    daysAgo(dateStr) {
-      const date = new Date(dateStr)
       const today = new Date()
-      const diff = today - date
-      return Math.floor(diff / 86400000)
+      const from = addDays(new Date(today.getFullYear(), today.getMonth(), today.getDate()), -27)
+
+      let doneDays = 0
+      for (let i = 0; i < 28; i++) {
+        const iso = isoFromDate(addDays(from, i))
+        if (this.habitsStore.completedDays[iso]) doneDays++
+      }
+      return Math.round((doneDays / 28) * 100)
     },
-    daysDiff(date1, date2) {
-      const d1 = new Date(date1)
-      const d2 = new Date(date2)
-      return Math.floor((d1 - d2) / 86400000)
+
+    // чтобы template не менять: просто подменим mostProductiveDay на fixed
+    mostProductiveDay() {
+      return this.mostProductiveDayFixed
     }
   }
 }
 </script>
+

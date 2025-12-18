@@ -1,31 +1,16 @@
 <template>
   <div class="carousel">
     <div class="carousel-nav">
-      <v-btn
-        icon
-        size="small"
-        variant="tonal"
-        class="btn-icon act-gold"
-        :disabled="isEmpty || atStart"
-        @click="prev"
-      >
-        <i class="bi bi-chevron-left"></i>
-      </v-btn>
-
-      <v-chip v-if="!isEmpty" size="small" variant="tonal" color="primary">
-        {{ currentIndex + 1 }} / {{ items.length }}
-      </v-chip>
-
-      <v-btn
-        icon
-        size="small"
-        variant="tonal"
-        class="btn-icon act-gold"
-        :disabled="isEmpty || atEnd"
-        @click="next"
-      >
-        <i class="bi bi-chevron-right"></i>
-      </v-btn>
+      <slot
+        name="nav"
+        :prev="prev"
+        :next="next"
+        :at-start="atStart"
+        :at-end="atEnd"
+        :is-empty="isEmpty"
+        :index="currentIndex"
+        :total="items.length"
+      />
     </div>
 
     <div class="carousel-stage">

@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app :data-accent="ui.accent">
     <div class="app-root">
       <WelcomeView
         v-if="screen === 'welcome'"
@@ -42,17 +42,21 @@ import WelcomeView from './views/authentication/WelcomeView.vue'
 import RegisterView from './views/authentication/RegisterView.vue'
 import LoginView from './views/authentication/LoginView.vue'
 import Sidebar from './components/layout/Sidebar.vue'
+import { useUiStore } from './stores/settings'
 
 export default {
   name: 'App',
   components: { WelcomeView, RegisterView, LoginView, Sidebar },
   data() {
     return {
+      ui: useUiStore(),
       screen: 'welcome',
       sidebarCollapsed: true
     }
   },
   created() {
+    this.ui.initFromStorage?.()
+
     const email = localStorage.getItem('current_user_email')
     if (email) {
       this.screen = 'main'
@@ -81,4 +85,3 @@ export default {
   }
 }
 </script>
-

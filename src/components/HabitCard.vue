@@ -1,29 +1,38 @@
 <template>
-  <v-card class="card" variant="tonal">
+  <v-card
+    class="card"
+    :variant="doneToday ? 'flat' : 'tonal'"
+    :style="doneToday ? {
+      borderColor: 'rgba(74,222,128,.45)',
+      boxShadow: '0 0 0 1px rgba(74,222,128,.35), 0 18px 45px rgba(0,0,0,.75)'
+    } : null"
+  >
     <v-card-title class="d-flex align-center justify-space-between ga-3">
       <div class="d-flex align-center ga-2 min-w-0">
-        <span :style="{ width:'10px', height:'10px', borderRadius:'999px', backgroundColor: categoryColor, display:'inline-block' }"></span>
+        <span
+          :style="{
+            width: '10px',
+            height: '10px',
+            borderRadius: '999px',
+            background: categoryColor,
+            display: 'inline-block'
+          }"
+        ></span>
         <span class="t-label">{{ categoryLabel }}</span>
       </div>
 
       <div class="d-flex align-center ga-2">
         <v-chip
           size="small"
-          :color="habit.doneToday ? 'success' : 'warning'"
+          :color="doneToday ? 'success' : 'warning'"
           variant="tonal"
         >
-          {{ habit.doneToday ? 'Done today' : 'Pending' }}
+          {{ doneToday ? 'Done today' : 'Pending' }}
         </v-chip>
 
-        <v-menu location="bottom end" :close-on-content-click="true">
+        <v-menu location="bottom end">
           <template #activator="{ props }">
-            <v-btn
-              v-bind="props"
-              icon
-              size="small"
-              variant="tonal"
-              class="btn-icon"
-            >
+            <v-btn v-bind="props" icon variant="tonal" size="small" class="btn-icon">
               <i class="bi bi-three-dots-vertical"></i>
             </v-btn>
           </template>
@@ -57,19 +66,16 @@
             variant="text"
             class="habit-toggle"
             :ripple="false"
+            :disabled="doneToday || !dueToday"
             @click="toggle"
           >
-            <i v-if="habit.doneToday" class="bi bi-check-lg"></i>
+            <i v-if="doneToday" class="bi bi-check-lg act-ok"></i>
             <i v-else class="bi bi-circle"></i>
           </v-btn>
         </template>
 
         <template #title>
-          <span class="t-body">{{ habit.name }}</span>
-        </template>
-
-        <template #subtitle>
-          <span class="t-cap"></span>
+          <span class="item-title">{{ habit.name }}</span>
         </template>
       </v-list-item>
 
@@ -78,18 +84,21 @@
           Every day
         </v-chip>
 
-        <div v-else class="d-flex ga-2 flex-wrap">
+        <div v-else>
           <v-chip
-            v-for="(d, idx) in days"
+            v-for="(d, idx) in weekLabels"
             :key="idx"
             size="x-small"
             variant="tonal"
             :color="habit.days && habit.days[idx] ? 'primary' : undefined"
-            class="day-chip"
           >
             {{ d }}
           </v-chip>
         </div>
+      </div>
+
+      <div v-if="!dueToday" class="t-cap mt-3">
+        Not scheduled for today
       </div>
     </v-card-text>
   </v-card>
@@ -103,29 +112,30 @@ const CATEGORY_MAP = {
   work: { label: 'Work', color: '#3b82f6' },
   other: { label: 'Other', color: '#a855f7' }
 }
-
 export default {
   name: 'HabitCard',
   props: {
-    habit: { type: Object, required: true }
+    habit: { type: Object, required: true },
+    doneToday: { type: Boolean, default: false },
+    dueToday: { type: Boolean, default: true }
   },
   emits: ['toggle', 'edit', 'delete'],
   data() {
-    return { days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] }
+    return {
+      weekLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    }
   },
   computed: {
-    categoryInfo() {
-      return CATEGORY_MAP[this.habit.category] || CATEGORY_MAP.other
-    },
-    categoryLabel() {
-      return this.categoryInfo.label
-    },
-    categoryColor() {
-      return this.categoryInfo.color
-    }
+  categoryLabel() {
+    return (CATEGORY_MAP[this.habit.category] || CATEGORY_MAP.other).label
+  },
+  categoryColor() {
+    return (CATEGORY_MAP[this.habit.category] || CATEGORY_MAP.other).color
+  }
   },
   methods: {
     toggle() {
+      if (this.doneToday || !this.dueToday) return
       this.$emit('toggle', this.habit.id)
     },
     onEdit() {

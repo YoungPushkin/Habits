@@ -12,7 +12,7 @@ import '@mdi/font/css/materialdesignicons.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 
 import './assets/styles/style.css'
-import './assets/styles/marking.css'
+
 
 const vuetify = createVuetify({
   components,

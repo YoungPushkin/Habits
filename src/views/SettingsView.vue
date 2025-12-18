@@ -7,19 +7,18 @@
       </div>
     </div>
 
-    <v-row class="mt-2" dense>
-      <v-col cols="12" md="6">
-        <v-card class="card" variant="tonal">
+    <v-row class="mt-2" dense align="stretch">
+      <v-col cols="12" md="6" class="d-flex">
+        <v-card class="card h-100 flex-grow-1" variant="tonal">
           <v-card-title>
             <div class="t-h2 text-silver">Profile</div>
           </v-card-title>
-
           <v-divider />
-
           <v-card-text>
             <div class="d-flex align-center ga-3 mb-4">
-              <v-avatar size="44" color="primary" variant="tonal">
-                <span class="profile-avatar-text">HF</span>
+              <v-avatar size="48" color="primary" variant="tonal">
+                <v-img v-if="ui.avatarDataUrl" :src="ui.avatarDataUrl" cover />
+                <span v-else class="profile-avatar-text">{{ initials }}</span>
               </v-avatar>
 
               <div class="min-w-0">
@@ -35,10 +34,57 @@
         </v-card>
       </v-col>
 
-      <v-col cols="12" md="6">
-        <v-card class="card" variant="tonal">
+      <v-col cols="12" md="6" class="d-flex">
+        <v-card class="card h-100 flex-grow-1" variant="tonal">
+          <v-card-title class="d-flex align-center justify-space-between">
+            <div class="t-h2 text-silver">Avatar</div>
+
+            <div class="d-flex ga-2">
+              <v-btn class="btn-action" variant="tonal" rounded="pill" @click="pickAvatar">
+                Upload
+              </v-btn>
+              <v-btn
+                class="btn-action"
+                color="error"
+                variant="tonal"
+                rounded="pill"
+                :disabled="!ui.avatarDataUrl"
+                @click="ui.clearAvatar()"
+              >
+                Remove
+              </v-btn>
+            </div>
+          </v-card-title>
+
+          <v-divider />
+
+          <v-card-text>
+            <div class="t-cap mb-3">Upload an image from your device. It will be shown everywhere.</div>
+
+            <div class="d-flex align-center ga-3">
+              <v-avatar size="64" color="primary" variant="tonal">
+                <v-img v-if="ui.avatarDataUrl" :src="ui.avatarDataUrl" cover />
+                <span v-else class="profile-avatar-text">{{ initials }}</span>
+              </v-avatar>
+
+              <div class="t-cap">Supported: JPG/PNG/WebP.</div>
+            </div>
+
+            <input
+              ref="fileInput"
+              type="file"
+              accept="image/*"
+              style="display:none"
+              @change="onAvatarFile"
+            />
+          </v-card-text>
+        </v-card>
+      </v-col>
+
+      <v-col cols="12" md="6" class="d-flex">
+        <v-card class="card h-100 flex-grow-1 " variant="tonal">
           <v-card-title>
-            <div class="t-h2 text-silver">Appearance</div>
+            <div class="t-h2 text-silver">Style</div>
           </v-card-title>
 
           <v-divider />
@@ -46,39 +92,26 @@
           <v-card-text>
             <div class="d-flex align-center justify-space-between ga-3 flex-wrap">
               <div>
-                <div class="t-body text-silver">Theme</div>
-                <div class="t-cap text-silver">Currently only dark mode available</div>
+                <div class="t-body">Accent</div>
+                <div class="t-cap">Choose Gold or Silver style</div>
               </div>
 
-              <v-chip size="small" variant="tonal" color="primary">Dark</v-chip>
+              <v-btn-toggle
+                :model-value="ui.accent"
+                mandatory
+                density="comfortable"
+                @update:modelValue="ui.setAccent"
+              >
+                <v-btn value="gold" variant="tonal" class="btn-action">Gold</v-btn>
+                <v-btn value="silver" variant="tonal" class="btn-action">Silver</v-btn>
+              </v-btn-toggle>
             </div>
           </v-card-text>
         </v-card>
       </v-col>
 
-      <v-col cols="12" md="6">
-        <v-card class="card" variant="tonal">
-          <v-card-title>
-            <div class="t-h2 text-silver">Notifications</div>
-          </v-card-title>
-
-          <v-divider />
-
-          <v-card-text>
-            <div class="d-flex align-center justify-space-between ga-3 flex-wrap">
-              <div>
-                <div class="t-body">Daily reminder</div>
-                <div class="t-cap">Get a reminder to complete habits</div>
-              </div>
-
-              <v-switch :model-value="true" disabled inset hide-details color="primary" />
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <v-col cols="12" md="6">
-        <v-card class="card" variant="tonal">
+      <v-col cols="12" md="6" class="d-flex">
+        <v-card class="card h-100 flex-grow-1" variant="tonal">
           <v-card-title>
             <div class="t-h2 text-silver">Danger zone</div>
           </v-card-title>
@@ -152,12 +185,8 @@
         </div>
 
         <div class="modal-pad-body">
-          <div class="t-body mb-2">
-            Are you sure? All habits and tasks will be deleted permanently.
-          </div>
-          <div class="t-cap">
-            This cannot be undone.
-          </div>
+          <div class="t-body mb-2">Are you sure? All habits and tasks will be deleted permanently.</div>
+          <div class="t-cap">This cannot be undone.</div>
         </div>
 
         <div class="modal-pad-actions d-flex justify-end">
@@ -176,17 +205,22 @@
 <script>
 import { useHabitsStore } from '../stores/habits'
 import { useTasksStore } from '../stores/tasks'
+import { useUiStore } from '../stores/settings'
 
 export default {
   name: 'SettingsView',
   data() {
     return {
+      ui: useUiStore(),
       showPasswordModal: false,
       showResetDialog: false,
       newPassword: '',
       confirmPassword: '',
       passwordError: ''
     }
+  },
+  created() {
+    this.ui.initFromStorage?.()
   },
   computed: {
     userEmail() {
@@ -197,9 +231,31 @@ export default {
       if (raw) return raw
       const email = this.userEmail || ''
       return email.includes('@') ? email.split('@')[0] : 'User'
+    },
+    initials() {
+      const n = (this.userName || 'U').trim()
+      return n.slice(0, 2).toUpperCase()
+    },
+    titleClass() {
+      return this.ui.accent === 'silver' ? 'text-silver' : 'text-gold'
     }
   },
   methods: {
+    pickAvatar() {
+      this.$refs.fileInput?.click()
+    },
+    onAvatarFile(e) {
+      const file = e?.target?.files?.[0]
+      if (!file) return
+      e.target.value = ''
+      if (!file.type.startsWith('image/')) return
+      const reader = new FileReader()
+      reader.onload = () => {
+        const dataUrl = reader.result
+        this.ui.setAvatar(typeof dataUrl === 'string' ? dataUrl : '')
+      }
+      reader.readAsDataURL(file)
+    },
     openChangePassword() {
       this.showPasswordModal = true
       this.passwordError = ''
@@ -226,13 +282,10 @@ export default {
     resetAll() {
       const habitsStore = useHabitsStore()
       const tasksStore = useTasksStore()
-
       habitsStore.resetAll?.()
-
       if (Array.isArray(tasksStore.tasks)) tasksStore.tasks = []
       tasksStore.nextId = 1
       tasksStore.saveToStorage?.()
-
       this.showResetDialog = false
     }
   }

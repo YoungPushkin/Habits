@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-function todayISO() {
+function isoToday() {
   const d = new Date()
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')
@@ -8,180 +8,231 @@ function todayISO() {
   return `${y}-${m}-${day}`
 }
 
+function weekIndex(date = new Date()) {
+  const js = date.getDay()
+  return (js + 6) % 7
+}
+
+function normalizeDays(input) {
+  const out = [false, false, false, false, false, false, false]
+  if (!Array.isArray(input)) return out
+  if (input.length === 7 && input.every(v => typeof v === 'boolean')) return input.slice(0, 7)
+  if (input.every(v => Number.isInteger(v))) {
+    input.forEach(i => {
+      if (i >= 0 && i < 7) out[i] = true
+    })
+    return out
+  }
+  return out
+}
+
 export const useHabitsStore = defineStore('habits', {
   state: () => ({
     habits: [],
     nextId: 1,
+    doneByDate: {},
     completedDays: {},
-    activityGridRows: 4,
-    activityGridCols: 14
+    bestStreak: 0
   }),
+
   getters: {
-    todayTotal(state) {
-      return state.habits.length
+    todayISO() {
+      return isoToday()
     },
-    todayDone(state) {
-      return state.habits.filter(h => h.doneToday).length
+    todayWeekIdx() {
+      return weekIndex(new Date())
     },
-    completionPercent(state) {
-      if (!state.habits.length) return 0
-      return Math.round(
-        (state.habits.filter(h => h.doneToday).length / state.habits.length) * 100
-      )
+    todayDoneMap(state) {
+      const date = this.todayISO
+      return state.doneByDate[date] || {}
+    },
+    todayHabits(state) {
+      const idx = this.todayWeekIdx
+      return (state.habits || []).filter(h => {
+        if (h.isDaily) return true
+        return Array.isArray(h.days) ? !!h.days[idx] : false
+      })
+    },
+    todayTotal() {
+      return this.todayHabits.length
+    },
+    todayDone() {
+      const map = this.todayDoneMap
+      return this.todayHabits.reduce((acc, h) => acc + (map[h.id] ? 1 : 0), 0)
+    },
+    completionPercent() {
+      return this.todayTotal === 0 ? 0 : Math.round((this.todayDone / this.todayTotal) * 100)
+    },
+    isDayFullyCompleted() {
+      if (this.todayTotal === 0) return false
+      return this.todayDone === this.todayTotal
     },
     activeDays(state) {
-      return Object.values(state.completedDays).filter(Boolean).length
-    },
-    bestStreak(state) {
-      const dates = Object.keys(state.completedDays).filter(d => state.completedDays[d])
-      if (!dates.length) return 0
-      const sorted = dates.sort()
-      let best = 1
-      let current = 1
-      for (let i = 1; i < sorted.length; i++) {
-        const prev = new Date(sorted[i - 1])
-        const curr = new Date(sorted[i])
-        const diff = (curr - prev) / (1000 * 60 * 60 * 24)
-        if (diff === 1) {
-          current++
-          if (current > best) best = current
-        } else {
-          current = 1
-        }
-      }
-      return best
+      return Object.keys(state.completedDays || {}).filter(d => state.completedDays[d]).length
     }
   },
+
   actions: {
-    storageKey() {
-      const email = localStorage.getItem('current_user_email') || 'guest'
-      return 'habits_' + email
+    ensureTodayBuckets() {
+      const date = this.todayISO
+      if (!this.doneByDate[date]) this.doneByDate[date] = {}
+      if (this.completedDays[date] === undefined) this.completedDays[date] = false
     },
+
+    syncTodayCompletion() {
+      this.ensureTodayBuckets()
+      const date = this.todayISO
+      const fully = this.isDayFullyCompleted
+
+      if (fully && !this.completedDays[date]) {
+        this.completedDays[date] = true
+        this.recalcBestStreak()
+      }
+
+      if (!fully && this.completedDays[date]) {
+        this.completedDays[date] = false
+      }
+    },
+
     initFromStorage() {
-      const raw = localStorage.getItem(this.storageKey())
-      if (!raw) {
-        this.habits = []
-        this.nextId = 1
-        this.completedDays = {}
-        return
+      const raw = localStorage.getItem('habits_db')
+      if (raw) {
+        try {
+          const data = JSON.parse(raw)
+          this.habits = Array.isArray(data.habits) ? data.habits : []
+          this.nextId = data.nextId || 1
+          this.doneByDate = data.doneByDate || {}
+          this.completedDays = data.completedDays || {}
+          this.bestStreak = data.bestStreak || 0
+        } catch (e) {}
       }
-      try {
-        const parsed = JSON.parse(raw)
-        if (!parsed || typeof parsed !== 'object') {
-          this.habits = []
-          this.nextId = 1
-          this.completedDays = {}
-          return
-        }
-        const habits = Array.isArray(parsed.habits) ? parsed.habits : []
-        this.habits = habits.map(h => ({
-          id: h.id,
-          name: h.name || '',
-          description: h.description || '',
-          type: h.type || 'custom',
-          category: h.category || 'neutral',
-          isDaily: typeof h.isDaily === 'boolean' ? h.isDaily : true,
-          days: Array.isArray(h.days) ? h.days : [],
-          doneToday: !!h.doneToday,
-          createdAt: h.createdAt || todayISO(),
-          history: h.history && typeof h.history === 'object' ? h.history : {}
-        }))
-        const maxId = this.habits.reduce((m, h) => (h.id > m ? h.id : m), 0)
-        this.nextId = maxId + 1
-        this.completedDays =
-          parsed.completedDays && typeof parsed.completedDays === 'object'
-            ? parsed.completedDays
-            : {}
-      } catch (e) {
-        this.habits = []
-        this.nextId = 1
-        this.completedDays = {}
-      }
-    },
-    saveToStorage() {
-      const payload = {
-        habits: this.habits,
-        completedDays: this.completedDays
-      }
-      localStorage.setItem(this.storageKey(), JSON.stringify(payload))
-    },
-    addHabit(name, description = '', type = 'custom', category = 'neutral', isDaily = true, days = []) {
-      const n = (name || '').trim()
-      if (!n) return
-      const habit = {
-        id: this.nextId++,
-        name: n,
-        description: description || '',
-        type: type || 'custom',
-        category,
-        isDaily: !!isDaily,
-        days: Array.isArray(days) ? days : [],
-        doneToday: false,
-        createdAt: todayISO(),
-        history: {}
-      }
-      this.habits.push(habit)
+
+      this.habits = (this.habits || []).map(h => ({
+        ...h,
+        isDaily: !!h.isDaily,
+        days: normalizeDays(h.days)
+      }))
+
+      this.ensureTodayBuckets()
+      this.syncTodayCompletion()
+      this.recalcBestStreak()
       this.saveToStorage()
     },
+
+    saveToStorage() {
+      localStorage.setItem(
+        'habits_db',
+        JSON.stringify({
+          habits: this.habits,
+          nextId: this.nextId,
+          doneByDate: this.doneByDate,
+          completedDays: this.completedDays,
+          bestStreak: this.bestStreak
+        })
+      )
+    },
+
+    isHabitDueToday(habit) {
+      const idx = this.todayWeekIdx
+      if (!habit) return false
+      if (habit.isDaily) return true
+      return Array.isArray(habit.days) ? !!habit.days[idx] : false
+    },
+
+    isHabitDoneToday(id) {
+      this.ensureTodayBuckets()
+      return !!this.doneByDate[this.todayISO]?.[id]
+    },
+
+    addHabit(payload) {
+      const name = (payload?.name || '').trim()
+      if (!name) return
+
+      const isDaily = !!payload.isDaily
+      const days = normalizeDays(payload.days)
+
+      this.habits.push({
+        id: this.nextId++,
+        name,
+        category: payload.category || 'other',
+        isDaily,
+        days,
+        createdAt: this.todayISO
+      })
+
+      this.syncTodayCompletion()
+      this.saveToStorage()
+    },
+
     editHabit(id, payload) {
       const h = this.habits.find(x => x.id === id)
       if (!h) return
-      if (payload.name !== undefined) {
-        const n = (payload.name || '').trim()
-        if (n) h.name = n
-      }
-      if (payload.category !== undefined) {
-        h.category = payload.category
-      }
-      if (payload.isDaily !== undefined) {
-        h.isDaily = !!payload.isDaily
-      }
-      if (payload.days !== undefined) {
-        h.days = Array.isArray(payload.days) ? payload.days : []
-      }
+
+      const name = (payload?.name || '').trim()
+      if (!name) return
+
+      h.name = name
+      h.category = payload.category || 'other'
+      h.isDaily = !!payload.isDaily
+      h.days = normalizeDays(payload.days)
+
+      this.syncTodayCompletion()
       this.saveToStorage()
     },
+
     deleteHabit(id) {
       this.habits = this.habits.filter(h => h.id !== id)
-      this.rebuildCompletedDays()
-      this.saveToStorage()
-    },
-    toggleHabit(id) {
-      const h = this.habits.find(x => x.id === id)
-      if (!h) return
-      const d = todayISO()
-      h.doneToday = !h.doneToday
-      if (!h.history) h.history = {}
-      if (h.doneToday) {
-        h.history[d] = true
-      } else {
-        delete h.history[d]
-      }
-      this.recalculateCompletedDay(d)
-      this.saveToStorage()
-    },
-    recalculateCompletedDay(dateStr) {
-      const anyCompleted = this.habits.some(h => h.history && h.history[dateStr])
-      if (anyCompleted) {
-        this.completedDays[dateStr] = true
-      } else {
-        delete this.completedDays[dateStr]
-      }
-    },
-    rebuildCompletedDays() {
-      const map = {}
-      this.habits.forEach(h => {
-        if (!h.history) return
-        Object.keys(h.history).forEach(d => {
-          if (h.history[d]) map[d] = true
-        })
+
+      Object.keys(this.doneByDate || {}).forEach(date => {
+        if (this.doneByDate[date]) delete this.doneByDate[date][id]
       })
-      this.completedDays = map
+
+      this.syncTodayCompletion()
+      this.saveToStorage()
     },
+
+    toggleHabitDoneToday(id) {
+      this.ensureTodayBuckets()
+
+      const habit = this.habits.find(h => h.id === id)
+      if (!habit) return
+      if (!this.isHabitDueToday(habit)) return
+      if (this.isHabitDoneToday(id)) return
+
+      this.doneByDate[this.todayISO][id] = true
+
+      this.syncTodayCompletion()
+      this.saveToStorage()
+    },
+
+    recalcBestStreak() {
+      const dates = Object.keys(this.completedDays || {})
+        .filter(d => this.completedDays[d])
+        .sort()
+
+      let best = 0
+      let cur = 0
+      let prev = null
+
+      for (const d of dates) {
+        if (!prev) cur = 1
+        else {
+          const diff = Math.floor((new Date(d) - new Date(prev)) / 86400000)
+          cur = diff === 1 ? cur + 1 : 1
+        }
+        if (cur > best) best = cur
+        prev = d
+      }
+
+      this.bestStreak = best
+    },
+
     resetAll() {
       this.habits = []
       this.nextId = 1
+      this.doneByDate = {}
       this.completedDays = {}
+      this.bestStreak = 0
       this.saveToStorage()
     }
   }
