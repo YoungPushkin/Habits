@@ -52,15 +52,20 @@
 </template>
 
 <script>
+import { useUsersStore } from '../../stores/users'
+
 export default {
   name: 'Sidebar',
+
   props: {
     collapsed: { type: Boolean, required: true }
   },
+
   emits: ['toggle', 'logout'],
+
   data() {
     return {
-      userName: '',
+      usersStore: useUsersStore(),
       items: [
         { name: 'dashboard', label: 'Dashboard', icon: 'bi bi-speedometer2', to: { name: 'dashboard' } },
         { name: 'habits', label: 'Habits', icon: 'bi bi-list-check', to: { name: 'habits' } },
@@ -70,16 +75,28 @@ export default {
       ]
     }
   },
-  created() {
-    const email = localStorage.getItem('current_user_email')
-    const raw = localStorage.getItem('users_db')
-    if (!email || !raw) return
 
-    try {
-      const users = JSON.parse(raw)
-      const user = Array.isArray(users) ? users.find(u => u.email === email) : null
-      if (user?.name) this.userName = user.name
-    } catch (e) {}
+  created() {
+    this.usersStore.load()
+    this.usersStore.loadCurrentUser()
+  },
+
+  computed: {
+    userName() {
+      return this.usersStore.currentUser?.name || 'User'
+    },
+
+    sidebarClass() {
+      return {
+        'sidebar--collapsed': this.collapsed
+      }
+    }
+  },
+
+  methods: {
+    onLogout() {
+      this.$emit('logout')
+    }
   }
 }
 </script>

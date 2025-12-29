@@ -5,10 +5,11 @@ export const useUsersStore = defineStore('users', {
     users: [],
     currentUser: null
   }),
+
   actions: {
     load() {
       const raw = localStorage.getItem('users_db')
-      if (raw) this.users = JSON.parse(raw)
+      this.users = raw ? JSON.parse(raw) : []
     },
 
     save() {
@@ -16,33 +17,56 @@ export const useUsersStore = defineStore('users', {
     },
 
     register(name, email, password) {
-      const exists = this.users.find(u => u.email === email)
-      if (exists) return false
+      const n = name.trim()
+      const e = email.trim().toLowerCase()
+      const p = password.trim()
 
-      this.users.push({
-        name,
-        email,
-        password,
-        habits: []
-      })
+      if (!n || !e || !p) {
+        return { ok: false, error: 'Invalid data' }
+      }
 
+      if (this.users.some(u => u.email === e)) {
+        return { ok: false, error: 'User already exists' }
+      }
+
+      this.users.push({ name: n, email: e, password: p })
       this.save()
-      return true
+
+      this.currentUser = { name: n, email: e }
+      localStorage.setItem('current_user_email', e)
+
+      return { ok: true }
     },
 
     login(email, password) {
-      const user = this.users.find(u => u.email === email && u.password === password)
-      if (!user) return false
+      const e = email.trim().toLowerCase()
+      const p = password.trim()
 
-      this.currentUser = user
+      const user = this.users.find(u => u.email === e && u.password === p)
+      if (!user) {
+        return { ok: false, error: 'Wrong email or password' }
+      }
+
+      this.currentUser = { name: user.name, email: user.email }
       localStorage.setItem('current_user_email', user.email)
-      return true
+
+      return { ok: true }
     },
 
     loadCurrentUser() {
       const email = localStorage.getItem('current_user_email')
-      if (!email) return
-      this.currentUser = this.users.find(u => u.email === email) || null
+      if (!email) {
+        this.currentUser = null
+        return
+      }
+
+      const user = this.users.find(u => u.email === email)
+      this.currentUser = user ? { name: user.name, email: user.email } : null
+    },
+
+    logout() {
+      this.currentUser = null
+      localStorage.removeItem('current_user_email')
     }
   }
 })

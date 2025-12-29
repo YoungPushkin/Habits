@@ -118,6 +118,12 @@ export const useHabitsStore = defineStore('habits', {
   },
 
   actions: {
+
+    storageKey() {
+      const email = localStorage.getItem('current_user_email') || 'guest'
+      return 'habits_' + email
+    },
+
     ensureTodayBuckets() {
       const date = this.todayISO
       if (!this.doneByDate[date]) this.doneByDate[date] = {}
@@ -140,7 +146,8 @@ export const useHabitsStore = defineStore('habits', {
     },
 
     initFromStorage() {
-      const raw = localStorage.getItem('habits_db')
+
+      const raw = localStorage.getItem(this.storageKey())
       if (raw) {
         try {
           const data = JSON.parse(raw)
@@ -150,6 +157,13 @@ export const useHabitsStore = defineStore('habits', {
           this.completedDays = data.completedDays || {}
           this.bestStreak = data.bestStreak || 0
         } catch (e) {}
+      } else {
+   
+        this.habits = []
+        this.nextId = 1
+        this.doneByDate = {}
+        this.completedDays = {}
+        this.bestStreak = 0
       }
 
       this.habits = (this.habits || []).map(h => ({
@@ -166,7 +180,7 @@ export const useHabitsStore = defineStore('habits', {
 
     saveToStorage() {
       localStorage.setItem(
-        'habits_db',
+        this.storageKey(),
         JSON.stringify({
           habits: this.habits,
           nextId: this.nextId,
@@ -236,6 +250,7 @@ export const useHabitsStore = defineStore('habits', {
       this.saveToStorage()
     },
 
+  
     toggleHabitDoneToday(id) {
       this.ensureTodayBuckets()
 
@@ -278,6 +293,9 @@ export const useHabitsStore = defineStore('habits', {
       this.doneByDate = {}
       this.completedDays = {}
       this.bestStreak = 0
+   
+      localStorage.removeItem(this.storageKey())
+     
       this.saveToStorage()
     }
   }

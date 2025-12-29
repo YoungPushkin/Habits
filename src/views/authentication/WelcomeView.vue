@@ -1,3 +1,10 @@
+<script>
+export default {
+  name: 'WelcomeView',
+  emits: ['start', 'login']
+}
+</script>
+
 <template>
   <section class="app-page">
     <v-container class="pa-0">
@@ -54,9 +61,3 @@
   </section>
 </template>
 
-<script>
-export default {
-  name: 'WelcomeView',
-  emits: ['start', 'login']
-}
-</script>

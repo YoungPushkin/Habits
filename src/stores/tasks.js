@@ -229,6 +229,11 @@ export const useTasksStore = defineStore('tasks', {
       t.status = 'done'
       t.completedAt = isoToday()
       this.saveToStorage()
+    },
+    resetAll() {
+      this.tasks = []
+      this.nextId = 1
+      this.saveToStorage()
     }
   }
 })

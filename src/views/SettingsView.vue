@@ -1,5 +1,5 @@
 <script>
-import settingsMixin from '../Mixins/SettingsView.mixin'
+import settingsMixin from '../mixins/SettingsView.mixin'
 
 export default {
   name: 'SettingsView',

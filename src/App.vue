@@ -71,7 +71,7 @@ export default {
     },
     logout() {
       localStorage.removeItem('current_user_email')
-      localStorage.removeItem('current_user_name')
+      localStorage.removeItem('current_user_name') 
       this.sidebarCollapsed = true
       this.screen = 'welcome'
       this.$router.push('/')

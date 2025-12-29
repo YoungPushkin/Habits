@@ -1,3 +1,39 @@
+<script>
+import AuthBaseMixin from '../../mixins/AuthBase.mixin'
+import { useHabitsStore } from '../../stores/habits'
+import { useTasksStore } from '../../stores/tasks'
+import { useUiStore } from '../../stores/settings'
+
+export default {
+  name: 'LoginView',
+  mixins: [AuthBaseMixin],
+  emits: ['back', 'loginSuccess'],
+
+  methods: {
+    onSubmit() {
+      const res = this.usersStore.login(this.email, this.password)
+      if (!res.ok) {
+        this.setError(res.error)
+        return
+      }
+
+      useUiStore().initFromStorage?.()
+      useHabitsStore().initFromStorage?.()
+      useTasksStore().initFromStorage?.()
+
+      this.clearError()
+
+   
+      this.$emit('loginSuccess')
+
+     
+      this.$router.push('/dashboard')
+    }
+  }
+}
+</script>
+
+
 <template>
   <section class="app-page">
     <v-card class="card auth-panel" variant="tonal">
@@ -35,13 +71,7 @@
             class="mb-3"
           />
 
-          <v-alert
-            v-if="error"
-            type="error"
-            variant="tonal"
-            density="comfortable"
-            class="mb-4"
-          >
+          <v-alert v-if="error" type="error" variant="tonal" density="comfortable" class="mb-4">
             {{ error }}
           </v-alert>
 
@@ -57,54 +87,3 @@
     </v-card>
   </section>
 </template>
-
-<script>
-import { useHabitsStore } from '../../stores/habits.js'
-import { useTasksStore } from '../../stores/tasks.js'
-
-export default {
-  name: 'LoginView',
-  emits: ['loginSuccess', 'back'],
-  data() {
-    return { email: '', password: '', error: '' }
-  },
-  methods: {
-    onSubmit() {
-      const email = (this.email || '').trim().toLowerCase()
-      const password = (this.password || '').trim()
-
-      if (!email || !password) {
-        this.error = 'Please fill all fields'
-        return
-      }
-
-      let users = []
-      const raw = localStorage.getItem('users_db')
-      if (raw) {
-        try {
-          const parsed = JSON.parse(raw)
-          if (Array.isArray(parsed)) users = parsed
-        } catch (e) {}
-      }
-
-      const user = users.find(u => u.email === email && u.password === password)
-      if (!user) {
-        this.error = 'Wrong email or password'
-        return
-      }
-
-      localStorage.setItem('current_user_email', email)
-      if (user.name) localStorage.setItem('current_user_name', user.name)
-
-      const habitsStore = useHabitsStore()
-      habitsStore.initFromStorage?.()
-
-      const tasksStore = useTasksStore()
-      tasksStore.initFromStorage?.()
-
-      this.error = ''
-      this.$emit('loginSuccess')
-    }
-  }
-}
-</script>
