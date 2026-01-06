@@ -3,9 +3,13 @@ import { useHabitsStore } from '../stores/habits'
 import { useTasksStore } from '../stores/tasks'
 import { percent } from '../utils/math.js'
 import { percentOfMax } from '../utils/chart.js'
+import HfCarousel from '../components/layout/HfCarousel.vue'
+import CarouselMixin from '../mixins/Carousel.mixin.js'
 
 export default {
   name: 'AnalyticsView',
+  mixins: [CarouselMixin],
+  components: { HfCarousel },
   data() {
     return {
       habitsStore: useHabitsStore(),
@@ -35,7 +39,14 @@ export default {
     },
 
     currentStreak() { return this.habitsStore.currentStreak },
-    averageWeekly() { return this.habitsStore.averageWeekly }
+    averageWeekly() { return this.habitsStore.averageWeekly },
+
+    analyticsSlides() {
+      return [
+        { key: 'priority-week' },
+        { key: 'history-progress' }
+      ]
+    }
   },
 
   methods: {
@@ -113,22 +124,6 @@ export default {
       <v-card class="card" variant="tonal">
         <v-card-text>
           <div class="d-flex align-center justify-space-between mb-2">
-            <div class="t-label">Remaining</div>
-            <div class="t-label">Active tasks</div>
-          </div>
-
-          <div class="d-flex align-end ga-3 mb-3">
-            <div class="t-value">{{ activeTasksCount }}</div>
-            <div class="t-cap">to complete</div>
-          </div>
-
-          <div class="t-cap">Focus on high-priority first.</div>
-        </v-card-text>
-      </v-card>
-
-      <v-card class="card" variant="tonal">
-        <v-card-text>
-          <div class="d-flex align-center justify-space-between mb-2">
             <div class="t-label">Habits</div>
             <div class="t-label">Weekly avg</div>
           </div>
@@ -143,151 +138,187 @@ export default {
       </v-card>
     </div>
 
-    <div class="analytics-grid">
-      <v-card class="card" variant="tonal">
-        <v-card-title class="d-flex align-center justify-space-between">
-          <div>
-            <div class="t-h2 text-silver">Tasks by priority</div>
-            <p class="t-sub text-silver">Active tasks distribution</p>
-          </div>
-
+    <HfCarousel class="analytics-carousel" :items="analyticsSlides">
+      <template #nav="{ prev, next, atStart, atEnd, index, total }">
+        <div class="d-flex align-center justify-center ga-2 mb-3">
+          <v-btn
+            icon
+            size="small"
+            class="btn-icon act-gold"
+            variant="tonal"
+            :disabled="atStart"
+            @click="prev"
+          >
+            <i class="bi bi-chevron-left"></i>
+          </v-btn>
           <v-chip size="small" variant="tonal" color="primary">
-            {{ totalActive }} active
+            {{ index + 1 }} / {{ total }}
           </v-chip>
-        </v-card-title>
+          <v-btn
+            icon
+            size="small"
+            class="btn-icon act-gold"
+            variant="tonal"
+            :disabled="atEnd"
+            @click="next"
+          >
+            <i class="bi bi-chevron-right"></i>
+          </v-btn>
+        </div>
+      </template>
 
-        <v-divider />
+      <template #default="{ item }">
+        <div class="analytics-grid">
+          <template v-if="item.key === 'priority-week'">
+            <v-card class="card" variant="tonal">
+              <v-card-title class="d-flex align-center justify-space-between">
+                <div>
+                  <div class="t-h2 text-silver">Tasks by priority</div>
+                  <p class="t-sub text-silver">Active tasks distribution</p>
+                </div>
 
-        <v-card-text>
-          <div v-if="totalActive > 0" class="split">
-            <div class="donut">
-              <svg viewBox="0 0 36 36" class="ring">
-                <path
-                  class="ring-bg"
-                  d="M18 2.0845 a 15.9155 15.9155 0 1 1 0 31.831 a 15.9155 15.9155 0 1 1 0 -31.831"
-                />
-                <path
-                  class="ring-seg p-high"
-                  :stroke-dasharray="highPercent + ', 100'"
-                  d="M18 2.0845 a 15.9155 15.9155 0 1 1 0 31.831 a 15.9155 15.9155 0 1 1 0 -31.831"
-                />
-                <path
-                  class="ring-seg p-med"
-                  :stroke-dasharray="mediumPercent + ', 100'"
-                  :stroke-dashoffset="-highPercent"
-                  d="M18 2.0845 a 15.9155 15.9155 0 1 1 0 31.831 a 15.9155 15.9155 0 1 1 0 -31.831"
-                />
-                <path
-                  class="ring-seg p-low"
-                  :stroke-dasharray="lowPercent + ', 100'"
-                  :stroke-dashoffset="-(highPercent + mediumPercent)"
-                  d="M18 2.0845 a 15.9155 15.9155 0 1 1 0 31.831 a 15.9155 15.9155 0 1 1 0 -31.831"
-                />
-              </svg>
-            </div>
+                <v-chip size="small" variant="tonal" color="primary">
+                  {{ totalActive }} active
+                </v-chip>
+              </v-card-title>
 
-            <div class="legend">
-              <div class="legend-item t-cap p-high">
-                <span class="legend-dot"></span>
-                High ({{ highCount }})
-              </div>
-              <div class="legend-item t-cap p-med">
-                <span class="legend-dot"></span>
-                Medium ({{ mediumCount }})
-              </div>
-              <div class="legend-item t-cap p-low">
-                <span class="legend-dot"></span>
-                Low ({{ lowCount }})
-              </div>
-            </div>
-          </div>
+              <v-divider />
 
-          <div v-else class="t-cap">No active tasks yet</div>
-        </v-card-text>
-      </v-card>
+              <v-card-text>
+                <div v-if="totalActive > 0" class="split">
+                  <div class="donut">
+                    <svg viewBox="0 0 36 36" class="ring">
+                      <path
+                        class="ring-bg"
+                        d="M18 2.0845 a 15.9155 15.9155 0 1 1 0 31.831 a 15.9155 15.9155 0 1 1 0 -31.831"
+                      />
+                      <path
+                        class="ring-seg p-high"
+                        :stroke-dasharray="highPercent + ', 100'"
+                        d="M18 2.0845 a 15.9155 15.9155 0 1 1 0 31.831 a 15.9155 15.9155 0 1 1 0 -31.831"
+                      />
+                      <path
+                        class="ring-seg p-med"
+                        :stroke-dasharray="mediumPercent + ', 100'"
+                        :stroke-dashoffset="-highPercent"
+                        d="M18 2.0845 a 15.9155 15.9155 0 1 1 0 31.831 a 15.9155 15.9155 0 1 1 0 -31.831"
+                      />
+                      <path
+                        class="ring-seg p-low"
+                        :stroke-dasharray="lowPercent + ', 100'"
+                        :stroke-dashoffset="-(highPercent + mediumPercent)"
+                        d="M18 2.0845 a 15.9155 15.9155 0 1 1 0 31.831 a 15.9155 15.9155 0 1 1 0 -31.831"
+                      />
+                    </svg>
+                  </div>
 
-      <v-card class="card" variant="tonal">
-        <v-card-title>
-          <div>
-            <div class="t-h2 text-silver">Tasks this week</div>
-            <p class="t-sub text-silver">Most productive: {{ mostProductiveDay }}</p>
-          </div>
-        </v-card-title>
+                  <div class="legend">
+                    <div class="legend-item t-cap p-high">
+                      <span class="legend-dot"></span>
+                      High ({{ highCount }})
+                    </div>
+                    <div class="legend-item t-cap p-med">
+                      <span class="legend-dot"></span>
+                      Medium ({{ mediumCount }})
+                    </div>
+                    <div class="legend-item t-cap p-low">
+                      <span class="legend-dot"></span>
+                      Low ({{ lowCount }})
+                    </div>
+                  </div>
+                </div>
 
-        <v-divider />
+                <div v-else class="t-cap">No active tasks yet</div>
+              </v-card-text>
+            </v-card>
 
-        <v-card-text>
-          <div class="chart-bars">
-            <div v-for="item in weeklyCompleted" :key="item.label" class="chart-col">
-              <div class="chart-box">
-                <div class="chart-fill" :style="{ height: barHeight(item.count) + '%' }"></div>
-              </div>
-              <span class="t-cap">{{ item.label }}</span>
-              <span class="t-cap">{{ item.count }}</span>
-            </div>
-          </div>
-        </v-card-text>
-      </v-card>
+            <v-card class="card" variant="tonal">
+              <v-card-title>
+                <div>
+                  <div class="t-h2 text-silver">Tasks this week</div>
+                  <p class="t-sub text-silver">Most productive: {{ mostProductiveDay }}</p>
+                </div>
+              </v-card-title>
 
-      <v-card class="card" variant="tonal">
-        <v-card-title>
-          <div>
-            <div class="t-h2 text-silver">Monthly history</div>
-            <p class="t-sub text-silver">Completed tasks (last 6 months)</p>
-          </div>
-        </v-card-title>
+              <v-divider />
 
-        <v-divider />
+              <v-card-text>
+                <div class="chart-bars">
+                  <div v-for="item in weeklyCompleted" :key="item.label" class="chart-col">
+                    <div class="chart-box">
+                      <div class="chart-fill" :style="{ height: barHeight(item.count) + '%' }"></div>
+                    </div>
+                    <span class="t-cap">{{ item.label }}</span>
+                    <span class="t-cap">{{ item.count }}</span>
+                  </div>
+                </div>
+              </v-card-text>
+            </v-card>
+          </template>
 
-        <v-card-text>
-          <div class="chart-bars">
-            <div v-for="item in monthlyHistory" :key="item.label" class="chart-col">
-              <div class="chart-box">
-                <div class="chart-fill" :style="{ height: monthHeight(item.count) + '%' }"></div>
-              </div>
-              <span class="t-cap">{{ item.label }}</span>
-              <span class="t-cap">{{ item.count }}</span>
-            </div>
-          </div>
-        </v-card-text>
-      </v-card>
+          <template v-else>
+            <v-card class="card" variant="tonal">
+              <v-card-title>
+                <div>
+                  <div class="t-h2 text-silver">Monthly history</div>
+                  <p class="t-sub text-silver">Completed tasks (last 6 months)</p>
+                </div>
+              </v-card-title>
 
-      <v-card class="card" variant="tonal">
-        <v-card-title class="d-flex align-center justify-space-between">
-          <div>
-            <div class="t-h2 text-silver">Tasks progress</div>
-            <p class="t-sub text-silver">Overall completion</p>
-          </div>
+              <v-divider />
 
-          <v-chip size="small" variant="tonal" color="primary">
-            {{ completedTasksCount }} done
-          </v-chip>
-        </v-card-title>
+              <v-card-text>
+                <div class="chart-bars">
+                  <div v-for="item in monthlyHistory" :key="item.label" class="chart-col">
+                    <div class="chart-box">
+                      <div class="chart-fill" :style="{ height: monthHeight(item.count) + '%' }"></div>
+                    </div>
+                    <span class="t-cap">{{ item.label }}</span>
+                    <span class="t-cap">{{ item.count }}</span>
+                  </div>
+                </div>
+              </v-card-text>
+            </v-card>
 
-        <v-divider />
+            <v-card class="card" variant="tonal">
+              <v-card-title class="d-flex align-center justify-space-between">
+                <div>
+                  <div class="t-h2 text-silver">Tasks progress</div>
+                  <p class="t-sub text-silver">Overall completion</p>
+                </div>
 
-        <v-card-text>
-          <div class="donut donut-center">
-            <svg viewBox="0 0 36 36" class="ring">
-              <path
-                class="ring-bg"
-                d="M18 2.0845 a 15.9155 15.9155 0 1 1 0 31.831 a 15.9155 15.9155 0 1 1 0 -31.831"
-              />
-              <path
-                class="ring-seg p-done"
-                :stroke-dasharray="tasksCompletionPercent + ', 100'"
-                d="M18 2.0845 a 15.9155 15.9155 0 1 1 0 31.831 a 15.9155 15.9155 0 1 1 0 -31.831"
-              />
-            </svg>
+                <v-chip size="small" variant="tonal" color="primary">
+                  {{ completedTasksCount }} done
+                </v-chip>
+              </v-card-title>
 
-            <div class="donut-label">
-              <span class="t-h2">{{ tasksCompletionPercent }}%</span>
-              <span class="t-cap">completed</span>
-            </div>
-          </div>
-        </v-card-text>
-      </v-card>
-    </div>
+              <v-divider />
+
+              <v-card-text>
+                <div class="donut donut-center">
+                  <svg viewBox="0 0 36 36" class="ring">
+                    <path
+                      class="ring-bg"
+                      d="M18 2.0845 a 15.9155 15.9155 0 1 1 0 31.831 a 15.9155 15.9155 0 1 1 0 -31.831"
+                    />
+                    <path
+                      class="ring-seg p-done"
+                      :stroke-dasharray="tasksCompletionPercent + ', 100'"
+                      d="M18 2.0845 a 15.9155 15.9155 0 1 1 0 31.831 a 15.9155 15.9155 0 1 1 0 -31.831"
+                    />
+                  </svg>
+
+                  <div class="donut-label">
+                    <span class="t-h2">{{ tasksCompletionPercent }}%</span>
+                    <span class="t-cap">completed</span>
+                  </div>
+                </div>
+              </v-card-text>
+            </v-card>
+          </template>
+        </div>
+      </template>
+    </HfCarousel>
   </section>
 </template>
 

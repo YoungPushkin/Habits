@@ -11,7 +11,7 @@ export default {
 </script>
 
 <template>
-  <section class="app-page auth-page welcome-page">
+  <section class="app-page auth-page auth-page--top welcome-page">
     <v-container class="pa-0">
       <div class="welcome-hero d-flex align-center justify-center ga-3 mb-4">
         <img :src="logo" alt="Habit Flow logo" class="welcome-logo" />

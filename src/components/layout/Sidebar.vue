@@ -8,7 +8,7 @@
   >
     <div class="sidebar-head">
       <div class="sidebar-brand">
-        <span v-if="!collapsed" class="brand text-gold">Habit Flow</span>
+        <span :class="['brand text-gold', { 'brand-hidden': collapsed }]">Habit Flow</span>
       </div>
 
       <v-btn variant="text" icon class="toggle-btn" @click="$emit('toggle')">
@@ -167,32 +167,36 @@ export default {
   min-width: 36px;
 }
 .sidebar-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:12px;
-  min-height:56px;
+  position:relative;
+  height:64px;
   width:100%;
+  padding:0 16px;
 }
 .sidebar-brand{
-  display:flex;
-  align-items:center;
-  padding-inline-start:16px;
-}
-.nav-collapsed .sidebar-head{
-  justify-content:center;
-  padding:12px;
+  position:absolute;
+  inset-inline-start:24px;
+  top:50%;
+  transform:translateY(-50%);
 }
 .toggle-btn{
-  min-width:36px;
-  height:36px;
+  position:absolute;
+  inset-inline-end:15px;
+  top:50%;
+  transform:translateY(-50%);
+  min-width:44px;
+  width:44px;
+  height:44px;
   display:flex;
   align-items:center;
   justify-content:center;
-  margin-left:-8px;
+  padding:0;
 }
 .nav-collapsed .toggle-btn{
   margin:0;
-  margin-left:0;
+}
+.brand-hidden{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
 }
 </style>
