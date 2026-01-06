@@ -1,4 +1,7 @@
 import { useUsersStore } from '../stores/users'
+import { normalizeEmail, normalizePassword, validateAuthFields } from '../utils/auth.js'
+
+let usersBootstrapped = false
 
 export default {
   data() {
@@ -11,25 +14,28 @@ export default {
   },
 
   created() {
-    this.usersStore.load()
-    this.usersStore.loadCurrentUser()
+  
+    if (!usersBootstrapped) {
+      usersBootstrapped = true
+      this.usersStore.load?.()
+      this.usersStore.loadCurrentUser?.()
+    }
   },
 
   methods: {
-    clearError() {
-      this.error = ''
-    },
-
     setError(msg) {
       this.error = msg || 'Error'
     },
 
-    normalizeEmail(val) {
-      return (val || '').trim().toLowerCase()
+    clearError() {
+      this.error = ''
     },
 
-    normalizePassword(val) {
-      return (val || '').trim()
+    normalizeEmail,
+    normalizePassword,
+
+    validateAuthFields() {
+      return validateAuthFields(this.email, this.password)
     }
   }
 }

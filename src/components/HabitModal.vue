@@ -104,6 +104,8 @@
 </template>
 
 <script>
+import { validateHabitPayload } from '../utils/validators.js'
+
 export default {
   name: 'HabitModal',
   props: {
@@ -191,29 +193,27 @@ export default {
     },
 
     save() {
-      const name = (this.form.name || '').trim()
-      if (!name) {
-        this.error = 'Name is required'
-        return
-      }
-
       const isDaily = (this.repeatMode === 'daily')
-
-      if (!isDaily && (!this.form.daysIdx || this.form.daysIdx.length === 0)) {
-        this.daysError = true
-        return
-      }
-
       const days = isDaily
         ? [false, false, false, false, false, false, false] 
         : this.toDaysBool(this.form.daysIdx)
 
-      this.$emit('save', {
-        name,
+      const res = validateHabitPayload({
+        name: this.form.name,
         category: this.form.category,
         isDaily,
         days
       })
+
+      if (!res.ok) {
+        this.error = res.error || 'Check the fields'
+        this.daysError = res.code === 'DAYS'
+        return
+      }
+
+      this.error = ''
+      this.daysError = false
+      this.$emit('save', res.payload)
     }
   }
 }

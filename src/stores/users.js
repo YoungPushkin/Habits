@@ -64,6 +64,19 @@ export const useUsersStore = defineStore('users', {
       this.currentUser = user ? { name: user.name, email: user.email } : null
     },
 
+    changePassword(newPassword) {
+      const p = String(newPassword || '').trim()
+      if (!p) return { ok: false, error: 'Password is required' }
+      if (!this.currentUser?.email) return { ok: false, error: 'Not logged in' }
+
+      const idx = this.users.findIndex(u => u.email === this.currentUser.email)
+      if (idx === -1) return { ok: false, error: 'User not found' }
+
+      this.users[idx] = { ...this.users[idx], password: p }
+      this.save()
+      return { ok: true }
+    },
+
     logout() {
       this.currentUser = null
       localStorage.removeItem('current_user_email')

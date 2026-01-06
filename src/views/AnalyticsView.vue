@@ -1,9 +1,51 @@
 <script>
-import analyticsMixin from '../Mixins/AnalyticsView.mixin'
+import { useHabitsStore } from '../stores/habits'
+import { useTasksStore } from '../stores/tasks'
+import { percent } from '../utils/math.js'
+import { percentOfMax } from '../utils/chart.js'
 
 export default {
   name: 'AnalyticsView',
-  mixins: [analyticsMixin]
+  data() {
+    return {
+      habitsStore: useHabitsStore(),
+      tasksStore: useTasksStore()
+    }
+  },
+  computed: {
+    completedTasksCount() { return this.tasksStore.completedTasksCount },
+    activeTasksCount() { return this.tasksStore.activeTasksCount },
+    totalActive() { return this.tasksStore.totalTasks },
+    tasksCompletionPercent() { return this.tasksStore.tasksCompletionPercent },
+    highCount() { return this.tasksStore.highCount },
+    mediumCount() { return this.tasksStore.mediumCount },
+    lowCount() { return this.tasksStore.lowCount },
+    mostProductiveDay() { return this.tasksStore.mostProductiveDay },
+    weeklyCompleted() { return this.tasksStore.weeklyCompleted },
+    monthlyHistory() { return this.tasksStore.monthlyHistory },
+
+    highPercent() {
+      return percent(this.highCount, this.totalActive || 0)
+    },
+    mediumPercent() {
+      return percent(this.mediumCount, this.totalActive || 0)
+    },
+    lowPercent() {
+      return percent(this.lowCount, this.totalActive || 0)
+    },
+
+    currentStreak() { return this.habitsStore.currentStreak },
+    averageWeekly() { return this.habitsStore.averageWeekly }
+  },
+
+  methods: {
+    barHeight(count) {
+      return percentOfMax(count, this.weeklyCompleted.map(i => i.count))
+    },
+    monthHeight(count) {
+      return percentOfMax(count, this.monthlyHistory.map(i => i.count))
+    }
+  }
 }
 </script>
 
@@ -176,11 +218,11 @@ export default {
 
         <v-card-text>
           <div class="chart-bars">
-            <div v-for="item in weeklyCompleted" :key="item.day" class="chart-col">
+            <div v-for="item in weeklyCompleted" :key="item.label" class="chart-col">
               <div class="chart-box">
                 <div class="chart-fill" :style="{ height: barHeight(item.count) + '%' }"></div>
               </div>
-              <span class="t-cap">{{ item.day }}</span>
+              <span class="t-cap">{{ item.label }}</span>
               <span class="t-cap">{{ item.count }}</span>
             </div>
           </div>

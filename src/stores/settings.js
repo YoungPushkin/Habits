@@ -1,14 +1,14 @@
 import { defineStore } from 'pinia'
 
-function storageKey(key) {
-  const email = localStorage.getItem('current_user_email') || 'guest'
-  return `${key}_${email}`
-}
+import { storageKey } from '../utils/storageKey.js'
 
 export const useUiStore = defineStore('ui', {
   state: () => ({
     avatarDataUrl: '',
-    accent: 'gold'
+    accent: 'gold',
+    toastMessage: '',
+    toastColor: 'success',
+    toastVisible: false
   }),
   actions: {
     initFromStorage() {
@@ -26,6 +26,20 @@ export const useUiStore = defineStore('ui', {
     setAccent(val) {
       this.accent = val === 'silver' ? 'silver' : 'gold'
       localStorage.setItem(storageKey('ui_accent'), this.accent)
+    },
+    showToast(message, color = 'success') {
+      this.toastMessage = message || ''
+      this.toastColor = color || 'success'
+      this.toastVisible = !!this.toastMessage
+    },
+    hideToast() {
+      this.toastVisible = false
+      this.toastMessage = ''
+    },
+    resetAll() {
+      this.clearAvatar()
+      this.setAccent('gold')
+      this.hideToast()
     }
   }
 })

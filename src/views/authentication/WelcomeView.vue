@@ -1,24 +1,27 @@
 <script>
+import logo from '../../assets/images/logo.png'
+
 export default {
   name: 'WelcomeView',
-  emits: ['start', 'login']
+  emits: ['start', 'login'],
+  data() {
+    return { logo }
+  }
 }
 </script>
 
 <template>
-  <section class="app-page">
+  <section class="app-page auth-page welcome-page">
     <v-container class="pa-0">
+      <div class="welcome-hero d-flex align-center justify-center ga-3 mb-4">
+        <img :src="logo" alt="Habit Flow logo" class="welcome-logo" />
+        <div class="logo-text">Habit Flow</div>
+      </div>
+
       <v-card class="card welcome-card" variant="tonal">
         <v-card-text>
-          <div class="d-flex align-center ga-3 mb-8">
-            <v-avatar size="42" color="primary" variant="tonal">
-              <span class="logo-mark">HF</span>
-            </v-avatar>
-            <div class="logo-text">Habit Flow</div>
-          </div>
-
-          <v-row class="align-center" dense>
-            <v-col cols="12" md="7">
+          <v-row class="align-center welcome-content" dense>
+            <v-col cols="12" md="7" class="welcome-copy">
               <div class="hero-eyebrow">Your dreams are in your hands</div>
 
               <h1 class="hero-title">
@@ -29,7 +32,7 @@ export default {
                 Track habits, set weekly schedules, follow your progress and never let a day go to waste.
               </p>
 
-              <div class="d-flex ga-3 flex-wrap mt-6">
+              <div class="d-flex ga-3 flex-wrap mt-6 justify-start">
                 <v-btn color="primary" variant="flat" rounded="pill" @click="$emit('start')">
                   Create account
                 </v-btn>
@@ -41,16 +44,15 @@ export default {
             </v-col>
 
             <v-col cols="12" md="5">
-              <v-card class="welcome-visual" variant="tonal">
-                <v-card-text class="welcome-visual-inner">
-                  <div class="visual-ring"></div>
-                  <div class="visual-lines"></div>
-                </v-card-text>
-              </v-card>
+              <div class="career-icons">
+                <div class="icon-pill">
+                  <i class="bi bi-graph-up-arrow"></i>
+                </div>
+              </div>
             </v-col>
           </v-row>
 
-          <div class="mt-10 text-center">
+          <div class="mt-4 text-center">
             <div class="footer-text">
               DISCIPLINE · ROUTINE · RESULTS
             </div>

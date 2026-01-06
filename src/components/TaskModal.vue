@@ -69,6 +69,7 @@
 
 <script>
 import CalendarPicker from './layout/CalendarPicker.vue'
+import { validateTaskPayload } from '../utils/validators.js'
 
 export default {
   name: 'TaskModal',
@@ -116,17 +117,19 @@ export default {
   },
   methods: {
     save() {
-      const title = (this.form.title || '').trim()
-      if (!title) {
-        this.error = 'Title is required'
-        return
-      }
-      this.error = ''
-      this.$emit('save', {
-        title,
+      const res = validateTaskPayload({
+        title: this.form.title,
         deadlineDate: this.form.deadlineDate,
         priority: this.form.priority
       })
+
+      if (!res.ok) {
+        this.error = res.error || 'Check the fields'
+        return
+      }
+
+      this.error = ''
+      this.$emit('save', res.payload)
     }
   }
 }

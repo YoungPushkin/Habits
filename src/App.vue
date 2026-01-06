@@ -33,6 +33,20 @@
           </v-container>
         </v-main>
       </v-layout>
+
+      <v-snackbar
+        v-model="ui.toastVisible"
+        :color="ui.toastColor"
+        location="bottom right"
+        timeout="2500"
+      >
+        {{ ui.toastMessage }}
+        <template #actions>
+          <v-btn icon size="small" variant="text" @click="ui.hideToast()">
+            <v-icon icon="mdi-close" />
+          </v-btn>
+        </template>
+      </v-snackbar>
     </div>
   </v-app>
 </template>
@@ -42,20 +56,31 @@ import WelcomeView from './views/authentication/WelcomeView.vue'
 import RegisterView from './views/authentication/RegisterView.vue'
 import LoginView from './views/authentication/LoginView.vue'
 import Sidebar from './components/layout/Sidebar.vue'
+
 import { useUiStore } from './stores/settings'
+import { useUsersStore } from './stores/users'
+import { useHabitsStore } from './stores/habits'
+import { useTasksStore } from './stores/tasks'
+import { initAllStores } from './utils/bootstrap.js'
+import DayWatcherMixin from './mixins/DayWatcher.mixin'
 
 export default {
   name: 'App',
+  mixins: [DayWatcherMixin],
   components: { WelcomeView, RegisterView, LoginView, Sidebar },
   data() {
     return {
       ui: useUiStore(),
+      usersStore: useUsersStore(),
+      habitsStore: useHabitsStore(),
+      tasksStore: useTasksStore(),
+
       screen: 'welcome',
       sidebarCollapsed: true
     }
   },
   created() {
-    this.ui.initFromStorage?.()
+    initAllStores()
 
     const email = localStorage.getItem('current_user_email')
     if (email) {
@@ -70,8 +95,11 @@ export default {
       this.sidebarCollapsed = !this.sidebarCollapsed
     },
     logout() {
-      localStorage.removeItem('current_user_email')
-      localStorage.removeItem('current_user_name') 
+      // clear in-memory state; keep per-user data persisted
+      this.habitsStore.$reset?.()
+      this.tasksStore.$reset?.()
+      this.ui.$reset?.()
+      this.usersStore.logout?.()
       this.sidebarCollapsed = true
       this.screen = 'welcome'
       this.$router.push('/')

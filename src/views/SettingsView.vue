@@ -177,7 +177,7 @@ export default {
           <v-btn class="btn-action" variant="tonal" rounded="pill" @click="showPasswordModal = false">
             Cancel
           </v-btn>
-          <v-btn class="btn-primary" variant="flat" rounded="pill" @click="changePassword">
+          <v-btn class="btn-primary" variant="flat" rounded="pill" @click="submitPasswordChange">
             Save
           </v-btn>
         </div>

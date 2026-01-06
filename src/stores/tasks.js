@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
-import { isoToday, startOfDay, startOfWeekMonday, addDays, monthKey } from '../stores/utils/date'
+import { startOfDay, startOfWeekMonday, addDays, monthKey, isoFromDate } from '../utils/date.js'
+import { storageKey } from '../utils/storageKey.js'
+import { percent } from '../utils/math.js'
 
 export const useTasksStore = defineStore('tasks', {
   state: () => ({
@@ -15,18 +17,21 @@ export const useTasksStore = defineStore('tasks', {
     activeTasks(state) {
       return state.tasks.filter(t => t.status === 'active')
     },
+
     completedTasks(state) {
       return state.tasks.filter(t => t.status === 'done')
     },
 
-    activeHigh(state) {
-      return state.tasks.filter(t => t.status === 'active' && t.priority === 'high')
+    activeHigh() {
+      return this.activeTasks.filter(t => t.priority === 'high')
     },
-    activeMedium(state) {
-      return state.tasks.filter(t => t.status === 'active' && t.priority === 'medium')
+
+    activeMedium() {
+      return this.activeTasks.filter(t => t.priority === 'medium')
     },
-    activeLow(state) {
-      return state.tasks.filter(t => t.status === 'active' && t.priority === 'low')
+
+    activeLow() {
+      return this.activeTasks.filter(t => t.priority === 'low')
     },
 
     countsByPriority() {
@@ -40,25 +45,61 @@ export const useTasksStore = defineStore('tasks', {
 
     completionPercent() {
       const total = this.activeTasks.length + this.completedTasks.length
-      return total === 0 ? 0 : Math.round((this.completedTasks.length / total) * 100)
+      return percent(this.completedTasks.length, total)
     },
 
     monthStats(state) {
       const now = new Date()
-      const y = now.getFullYear()
-      const m = now.getMonth()
-
-      const monthTasks = state.tasks.filter(t => {
-        if (!t.deadlineDate) return false
-        const d = new Date(t.deadlineDate + 'T00:00:00')
-        return d.getFullYear() === y && d.getMonth() === m
+      const mk = monthKey(now)
+      const monthTasks = (state.tasks || []).filter(t => {
+        if (t.completedAt) return monthKey(new Date(t.completedAt)) === mk
+        return t.monthKey === mk
       })
-
       const total = monthTasks.length
       const done = monthTasks.filter(t => t.status === 'done').length
-      const percent = total === 0 ? 0 : Math.round((done / total) * 100)
+      const pct = percent(done, total)
+      return { total, done, percent: pct }
+    },
 
-      return { total, done, percent }
+    // Dashboard/UI helpers (keep Views dumb)
+    monthTasksDone() {
+      return this.monthStats?.done ?? 0
+    },
+    monthTasksTotal() {
+      return this.monthStats?.total ?? 0
+    },
+    monthTasksPercent() {
+      return this.monthStats?.percent ?? 0
+    },
+
+    currentTaskNumber() {
+      return (index) => {
+        const total = this.importantTasks?.length || 0
+        return total ? Number(index) + 1 : 0
+      }
+    },
+
+    // Analytics aliases
+    activeTasksCount() {
+      return this.activeTasks.length
+    },
+    completedTasksCount() {
+      return this.completedTasks.length
+    },
+    totalTasks() {
+      return this.activeTasks.length
+    },
+    tasksCompletionPercent() {
+      return this.completionPercent
+    },
+    highCount() {
+      return this.countsByPriority.high
+    },
+    mediumCount() {
+      return this.countsByPriority.medium
+    },
+    lowCount() {
+      return this.countsByPriority.low
     },
 
     importantTasks(state) {
@@ -84,156 +125,165 @@ export const useTasksStore = defineStore('tasks', {
       const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
       const monday = startOfWeekMonday(new Date())
       const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i))
-      const isoDays = days.map(d => {
-        const y = d.getFullYear()
-        const m = String(d.getMonth() + 1).padStart(2, '0')
-        const day = String(d.getDate()).padStart(2, '0')
-        return `${y}-${m}-${day}`
-      })
+      const isoDays = days.map(d => isoFromDate(d))
 
       const done = (state.tasks || []).filter(t => t.status === 'done' && t.completedAt)
       const map = Object.create(null)
 
       for (const t of done) {
-        const key = t.completedAt
+        const d = new Date(t.completedAt)
+        if (Number.isNaN(d.getTime())) continue
+        const iso = isoFromDate(d)
+        map[iso] = (map[iso] || 0) + 1
+      }
+
+      return labels.map((label, i) => ({ label, day: label, count: map[isoDays[i]] || 0 }))
+    },
+
+    mostProductiveDay(state) {
+      const done = (state.tasks || []).filter(t => t.status === 'done' && t.completedAt)
+      if (!done.length) return '—'
+
+      const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+      const map = Object.create(null)
+
+      for (const t of done) {
+        const d = new Date(t.completedAt)
+        const key = labels[d.getDay()]
         map[key] = (map[key] || 0) + 1
       }
 
-      return isoDays.map((iso, i) => ({ day: labels[i], count: map[iso] || 0 }))
-    },
-
-    mostProductiveDay() {
-      const list = this.weeklyCompleted || []
-      if (!list.length) return 'None'
-      const max = list.reduce((a, b) => (b.count > a.count ? b : a), list[0])
-      return max.count === 0 ? 'None' : max.day
+      let best = '—'
+      let bestCount = -1
+      for (const k of Object.keys(map)) {
+        if (map[k] > bestCount) {
+          best = k
+          bestCount = map[k]
+        }
+      }
+      return best
     },
 
     monthlyHistory(state) {
+      const done = (state.tasks || [])
+        .filter(t => t.status === 'done' && t.completedAt)
+        .map(t => new Date(t.completedAt))
+        .filter(d => !Number.isNaN(d.getTime()))
+        .sort((a, b) => a - b)
+
+      if (!done.length) return []
+
+      const toMonthIndex = (d) => d.getFullYear() * 12 + d.getMonth()
+
       const now = new Date()
-      const first = new Date(now.getFullYear(), now.getMonth(), 1)
+      const firstMonth = new Date(done[0].getFullYear(), done[0].getMonth(), 1)
+
+      const monthsFromStart = toMonthIndex(now) - toMonthIndex(firstMonth)
+      const cycleStartOffset = Math.floor(monthsFromStart / 6) * 6
+      const startMonthIndex = toMonthIndex(firstMonth) + cycleStartOffset
+      const endMonthIndex = startMonthIndex + 5
 
       const months = Array.from({ length: 6 }, (_, i) => {
-        const d = new Date(first)
-        d.setMonth(d.getMonth() - (5 - i))
-        return d
+        const idx = startMonthIndex + i
+        const y = Math.floor(idx / 12)
+        const m = idx % 12
+        return new Date(y, m, 1)
       })
 
-      const labels = months.map(d => d.toLocaleString('en-US', { month: 'short' }))
-      const keys = months.map(d => monthKey(d))
-
-      const done = (state.tasks || []).filter(t => t.status === 'done' && t.completedAt)
       const map = Object.create(null)
 
-      for (const t of done) {
-        const d = new Date(t.completedAt + 'T00:00:00')
-        if (Number.isNaN(d.getTime())) continue
+      for (const d of done) {
+        const idx = toMonthIndex(d)
+        if (idx < startMonthIndex || idx > endMonthIndex) continue
         const k = monthKey(d)
         map[k] = (map[k] || 0) + 1
       }
 
-      return keys.map((k, i) => ({ label: labels[i], count: map[k] || 0 }))
+      return months.map(d => ({
+        label: d.toLocaleString('en-US', { month: 'short' }),
+        count: map[monthKey(d)] || 0
+      }))
     }
   },
 
   actions: {
-    storageKey() {
-      const email = localStorage.getItem('current_user_email') || 'guest'
-      return 'tasks_' + email
+    _save() {
+      localStorage.setItem(storageKey('tasks_store'), JSON.stringify({
+        tasks: this.tasks,
+        nextId: this.nextId
+      }))
     },
 
     initFromStorage() {
-      const raw = localStorage.getItem(this.storageKey())
-      if (!raw) {
-        this.tasks = []
-        this.nextId = 1
-        return
-      }
-
+      const raw = localStorage.getItem(storageKey('tasks_store'))
+      if (!raw) return
       try {
-        const parsed = JSON.parse(raw)
-
-        if (Array.isArray(parsed)) {
-          this.tasks = parsed.map(t => {
-            const status = t.status || 'active'
-            let completedAt = t.completedAt || ''
-
-            if (status === 'done' && !completedAt) {
-              completedAt = t.deadlineDate || isoToday()
-            }
-
-            return {
-              id: Number(t.id),
-              title: t.title || '',
-              priority: ['high', 'medium', 'low'].includes(t.priority) ? t.priority : 'medium',
-              deadlineDate: t.deadlineDate || '',
-              status,
-              completedAt
-            }
-          })
-
-          const maxId = this.tasks.reduce((m, t) => (t.id > m ? t.id : m), 0)
-          this.nextId = maxId + 1
-          this.saveToStorage()
-        } else {
-          this.tasks = []
-          this.nextId = 1
-        }
-      } catch (e) {
-        this.tasks = []
-        this.nextId = 1
-      }
-    },
-
-    saveToStorage() {
-      localStorage.setItem(this.storageKey(), JSON.stringify(this.tasks))
+        const data = JSON.parse(raw)
+        this.tasks = Array.isArray(data.tasks) ? data.tasks : []
+        this.nextId = Number.isInteger(data.nextId) ? data.nextId : 1
+      } catch (e) {}
     },
 
     addTask(payload) {
-      const title = (payload.title || '').trim()
-      if (!title) return
-
-      const p = ['high', 'medium', 'low'].includes(payload.priority) ? payload.priority : 'medium'
-
-      this.tasks.push({
+      const t = {
         id: this.nextId++,
-        title,
-        priority: p,
+        title: String(payload.title || '').trim(),
+        description: String(payload.description || '').trim(),
+        priority: payload.priority || 'medium',
         deadlineDate: payload.deadlineDate || '',
+        monthKey: monthKey(new Date()),
         status: 'active',
-        completedAt: ''
-      })
-
-      this.saveToStorage()
+        createdAt: new Date().toISOString(),
+        completedAt: null
+      }
+      this.tasks.push(t)
+      this._save()
+      return { ok: true, task: t }
     },
 
-    editTask(id, payload) {
-      const t = this.tasks.find(x => x.id === id)
-      if (!t) return
-
-      t.title = (payload.title ?? t.title).trim?.() || t.title
-      t.priority = ['high', 'medium', 'low'].includes(payload.priority) ? payload.priority : t.priority
-      t.deadlineDate = payload.deadlineDate ?? t.deadlineDate
-
-      this.saveToStorage()
-    },
-
-    deleteTask(id) {
-      this.tasks = this.tasks.filter(t => t.id !== id)
-      this.saveToStorage()
+    editTask(id, patch) {
+      const idx = this.tasks.findIndex(t => t.id === id)
+      if (idx === -1) return { ok: false, error: 'Task not found' }
+      const prev = this.tasks[idx]
+      this.tasks[idx] = {
+        ...prev,
+        title: patch.title != null ? String(patch.title).trim() : prev.title,
+        description: patch.description != null ? String(patch.description).trim() : prev.description,
+        priority: patch.priority != null ? patch.priority : prev.priority,
+        deadlineDate: patch.deadlineDate != null ? patch.deadlineDate : prev.deadlineDate
+      }
+      this._save()
+      return { ok: true }
     },
 
     completeTask(id) {
-      const t = this.tasks.find(x => x.id === id)
-      if (!t) return
-      t.status = 'done'
-      t.completedAt = isoToday()
-      this.saveToStorage()
+      const idx = this.tasks.findIndex(t => t.id === id)
+      if (idx === -1) return { ok: false, error: 'Task not found' }
+      if (this.tasks[idx].status === 'done') return { ok: true }
+
+      this.tasks[idx] = {
+        ...this.tasks[idx],
+        status: 'done',
+        completedAt: new Date().toISOString()
+      }
+      this._save()
+      return { ok: true }
     },
+
+    deleteTask(id) {
+      const before = this.tasks.length
+      this.tasks = this.tasks.filter(t => t.id !== id)
+      if (this.tasks.length !== before) {
+        this._save()
+        return { ok: true }
+      }
+      return { ok: false, error: 'Task not found' }
+    },
+
     resetAll() {
       this.tasks = []
       this.nextId = 1
-      this.saveToStorage()
+      localStorage.removeItem(storageKey('tasks_store'))
     }
   }
 })

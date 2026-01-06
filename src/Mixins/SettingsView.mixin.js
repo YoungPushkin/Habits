@@ -1,13 +1,12 @@
+import { useUsersStore } from '../stores/users'
 import { useUiStore } from '../stores/settings'
-import { useHabitsStore } from '../stores/habits'
-import { useTasksStore } from '../stores/tasks'
+import { resetAllStores } from '../utils/bootstrap.js'
 
 export default {
-  name: 'SettingsView',
-
   data() {
     return {
       ui: useUiStore(),
+      usersStore: useUsersStore(),
 
       showPasswordModal: false,
       showResetDialog: false,
@@ -17,26 +16,18 @@ export default {
     }
   },
 
-  created() {
-    this.ui.initFromStorage?.()
-  },
-
   computed: {
+    currentUser() {
+      return this.usersStore.currentUser || null
+    },
+
     userEmail() {
-      return localStorage.getItem('current_user_email') || 'guest@example.com'
+      return this.currentUser?.email || ''
     },
 
     userName() {
-      const rawUsers = localStorage.getItem('users_db')
-      const email = this.userEmail
-
-      try {
-        const users = JSON.parse(rawUsers || '[]')
-        const user = Array.isArray(users) ? users.find(u => (u.email || '').toLowerCase() === email.toLowerCase()) : null
-        if (user?.name) return user.name
-      } catch (e) {}
-
-      return email.includes('@') ? email.split('@')[0] : 'User'
+      
+      return this.currentUser?.name || (this.userEmail.includes('@') ? this.userEmail.split('@')[0] : 'User')
     },
 
     initials() {
@@ -65,48 +56,55 @@ export default {
       reader.readAsDataURL(file)
     },
 
-  
-    onAccentChange(val) {
-      this.ui.setAccent(val)
-    },
-
     openChangePassword() {
-      this.showPasswordModal = true
       this.passwordError = ''
       this.newPassword = ''
       this.confirmPassword = ''
+      this.showPasswordModal = true
     },
 
-    changePassword() {
-      if ((this.newPassword || '').length < 6) {
-        this.passwordError = 'Password must be at least 6 characters'
-        return
-      }
-      if (this.newPassword !== this.confirmPassword) {
-        this.passwordError = 'Passwords do not match'
-        return
-      }
-
+    closeChangePassword() {
       this.passwordError = ''
       this.showPasswordModal = false
       this.newPassword = ''
       this.confirmPassword = ''
     },
 
+    submitPasswordChange() {
+      const p1 = String(this.newPassword || '').trim()
+      const p2 = String(this.confirmPassword || '').trim()
+
+      if (!p1 || p1.length < 4) {
+        this.passwordError = 'Password is too short'
+        return
+      }
+      if (p1 !== p2) {
+        this.passwordError = 'Passwords do not match'
+        return
+      }
+
+      const res = this.usersStore.changePassword?.(p1)
+      if (res && res.ok === false) {
+        this.passwordError = res.error || 'Error'
+        return
+      }
+
+      this.ui.showToast?.('Password updated', 'success')
+      this.closeChangePassword()
+    },
+
     confirmReset() {
       this.showResetDialog = true
     },
 
+    cancelReset() {
+      this.showResetDialog = false
+    },
+
     resetAll() {
-     
-      const habitsStore = useHabitsStore()
-      habitsStore.resetAll?.()
-
-      const tasksStore = useTasksStore()
-      tasksStore.resetAll?.() 
-
+      resetAllStores()
+      this.ui.showToast?.('All data reset', 'info')
       this.showResetDialog = false
     }
   }
 }
-

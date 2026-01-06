@@ -1,25 +1,32 @@
 <script>
 import AuthBaseMixin from '../../mixins/AuthBase.mixin'
-import { useHabitsStore } from '../../stores/habits'
-import { useTasksStore } from '../../stores/tasks'
-import { useUiStore } from '../../stores/settings'
+import { initAllStores } from '../../utils/bootstrap.js'
+import logo from '../../assets/images/logo.png'
 
 export default {
   name: 'LoginView',
   mixins: [AuthBaseMixin],
   emits: ['back', 'loginSuccess'],
 
+  data() {
+    return { logo }
+  },
+
   methods: {
     onSubmit() {
-      const res = this.usersStore.login(this.email, this.password)
+      const check = this.validateAuthFields()
+      if (!check.ok) {
+        this.setError(check.message)
+        return
+      }
+
+      const res = this.usersStore.login(check.email, check.password)
       if (!res.ok) {
         this.setError(res.error)
         return
       }
 
-      useUiStore().initFromStorage?.()
-      useHabitsStore().initFromStorage?.()
-      useTasksStore().initFromStorage?.()
+      initAllStores()
 
       this.clearError()
 
@@ -35,15 +42,14 @@ export default {
 
 
 <template>
-  <section class="app-page">
-    <v-card class="card auth-panel" variant="tonal">
+  <section class="app-page auth-page auth-page--top">
+    <div class="auth-hero">
+      <img :src="logo" alt="Habit Flow logo" class="auth-logo" />
+      <div class="logo-text">Habit Flow</div>
+    </div>
+
+    <v-card class="card auth-panel wide" variant="tonal">
       <v-card-text>
-        <div class="d-flex align-center ga-3 mb-6">
-          <v-avatar size="38" variant="tonal" color="primary">
-            <span class="logo-mark">HF</span>
-          </v-avatar>
-          <div class="logo-text">Habit Flow</div>
-        </div>
 
         <div class="t-h2 mb-1">Log in</div>
         <p class="t-sub mb-6">Continue with your personal routine.</p>

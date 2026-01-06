@@ -1,5 +1,8 @@
 <script>
-import dashboardMixin from '../Mixins/DashboardView.mixin'
+import CarouselMixin from '../mixins/Carousel.mixin'
+import HabitModalMixin from '../mixins/HabitModal.mixin'
+import TaskModalMixin from '../mixins/TaskModal.mixin'
+
 import HabitModal from '../components/HabitModal.vue'
 import TaskModal from '../components/TaskModal.vue'
 import HabitCard from '../components/HabitCard.vue'
@@ -8,8 +11,16 @@ import HfCarousel from '../components/layout/HfCarousel.vue'
 
 export default {
   name: 'DashboardView',
-  mixins: [dashboardMixin],
-  components: { HabitModal, TaskModal, HabitCard, TaskCard, HfCarousel }
+  mixins: [CarouselMixin, HabitModalMixin, TaskModalMixin],
+  components: { HabitModal, TaskModal, HabitCard, TaskCard, HfCarousel },
+
+  computed: {
+    todayHabitsForUI() { return this.habitsStore.todayHabitsForUI },
+    importantTasks() { return this.tasksStore.importantTasks },
+    todayLabel() {
+      return new Date().toLocaleDateString('en-US', { weekday: 'long' })
+    }
+  }
 }
 </script>
 
@@ -30,7 +41,7 @@ export default {
 
         <v-chip size="small" variant="tonal">
           <i class="bi bi-calendar2" style="margin-right:8px;"></i>
-          Today
+          {{ todayLabel }}
         </v-chip>
       </div>
     </div>
@@ -44,12 +55,12 @@ export default {
           </div>
 
           <div class="d-flex align-end ga-3 mb-3">
-            <div class="t-value">{{ store.completionPercent }}%</div>
-            <div class="t-cap">{{ store.todayDone }} of {{ store.todayTotal }} habits</div>
+            <div class="t-value">{{ habitsStore.completionPercent }}%</div>
+            <div class="t-cap">{{ habitsStore.todayDone }} of {{ habitsStore.todayTotal }} habits</div>
           </div>
 
           <v-progress-linear
-            :model-value="store.completionPercent"
+            :model-value="habitsStore.completionPercent"
             height="8"
             rounded
             color="primary"
@@ -65,7 +76,7 @@ export default {
           </div>
 
           <div class="d-flex align-end ga-3 mb-3">
-            <div class="t-value">{{ bestStreak }} days</div>
+            <div class="t-value">{{ habitsStore.bestStreak }} days</div>
             <div class="t-cap">Longest chain</div>
           </div>
 
@@ -74,7 +85,7 @@ export default {
               v-for="n in 7"
               :key="n"
               class="streak-dot"
-              :style="n <= disciplineDots ? {
+              :style="n <= habitsStore.disciplineDots ? {
                 background: 'linear-gradient(90deg,var(--gold),var(--gold2))',
                 borderColor: 'rgba(212,175,55,.45)',
                 boxShadow: '0 10px 22px rgba(212,175,55,.16)'
@@ -92,8 +103,8 @@ export default {
           </div>
 
           <div class="d-flex align-end ga-3 mb-3">
-            <div class="t-value">{{ monthTasksDone }}</div>
-            <div class="t-cap">{{ monthTasksTotal }} total tasks</div>
+            <div class="t-value">{{ tasksStore.monthTasksDone }}</div>
+            <div class="t-cap">{{ tasksStore.monthTasksTotal }} total tasks</div>
           </div>
 
           <div class="bars">
@@ -101,7 +112,7 @@ export default {
               v-for="n in 5"
               :key="n"
               class="bar"
-              :class="{ 'is-on': n <= Math.min(4, Math.round(monthTasksPercent / 25)) }"
+              :class="{ 'is-on': n <= Math.min(4, Math.round(tasksStore.monthTasksPercent / 25)) }"
             />
           </div>
         </v-card-text>
@@ -129,7 +140,7 @@ export default {
             </v-btn>
 
             <v-chip v-if="todayHabitsForUI.length" size="small" variant="tonal" color="primary">
-              {{ currentHabitNumber }} / {{ todayHabitsForUI.length }}
+              {{ habitsStore.currentHabitNumber(habitsIndex) }} / {{ todayHabitsForUI.length }}
             </v-chip>
 
             <v-btn
@@ -159,9 +170,9 @@ export default {
                   :habit="item"
                   :done-today="item.doneToday"
                   :due-today="true"
-                  @toggle="toggleHabitDone"
-                  @delete="removeHabit"
-                  @edit="openEditHabit"
+                  @toggle="toggleHabit"
+                  @delete="deleteHabit"
+                  @edit="openHabitEdit"
                 />
               </template>
             </HfCarousel>
@@ -180,12 +191,12 @@ export default {
         <v-divider />
 
         <v-card-text class="d-flex flex-column ga-3">
-          <v-btn variant="tonal" rounded="pill" color="primary" @click="openTaskModal">
+          <v-btn variant="tonal" rounded="pill" color="primary" @click="openTaskCreate">
             <i class="bi bi-plus-lg" style="margin-right:8px;"></i>
             Add task
           </v-btn>
 
-          <v-btn class="btn-primary" color="primary" variant="flat" rounded="pill" @click="openHabitModal">
+          <v-btn class="btn-primary" color="primary" variant="flat" rounded="pill" @click="openHabitCreate">
             <i class="bi bi-plus-lg" style="margin-right:8px;"></i>
             Add habit
           </v-btn>
@@ -214,7 +225,7 @@ export default {
             </v-btn>
 
             <v-chip v-if="importantTasks.length" size="small" variant="tonal" color="primary">
-              {{ currentTaskNumber }} / {{ importantTasks.length }}
+              {{ tasksStore.currentTaskNumber(tasksIndex) }} / {{ importantTasks.length }}
             </v-chip>
 
             <v-btn
@@ -248,7 +259,7 @@ export default {
                 <TaskCard
                   :task="item"
                   @complete="completeTask"
-                  @edit="openEditTask"
+                  @edit="openTaskEdit"
                   @delete="deleteTask"
                 />
               </template>
@@ -259,22 +270,19 @@ export default {
     </div>
 
     <HabitModal
-      v-if="showHabitModal"
-      :mode="habitModalMode"
-      :habit="selectedHabit"
-      @close="onHabitModalClose"
-      @save="handleHabitSave"
+      v-if="showModal && modalType === 'habit'"
+      :mode="modalMode"
+      :habit="modalType === 'habit' ? selectedItem : null"
+      @close="closeModal"
+      @save="submitHabit"
     />
 
     <TaskModal
-      v-if="showTaskModal"
-      :mode="taskModalMode"
-      :task="selectedTask"
-      @close="onTaskModalClose"
-      @save="handleTaskSave"
+      v-if="showModal && modalType === 'task'"
+      :mode="modalMode"
+      :task="modalType === 'task' ? selectedItem : null"
+      @close="closeModal"
+      @save="submitTask"
     />
   </section>
 </template>
-
-
-
