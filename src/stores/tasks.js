@@ -4,11 +4,13 @@ import { storageKey } from '../utils/storageKey.js'
 import { percent } from '../utils/math.js'
 
 export const useTasksStore = defineStore('tasks', {
+  // STATE: tasks list + id counter
   state: () => ({
     tasks: [],
     nextId: 1
   }),
 
+  // GETTERS: slices, aggregates, analytics helpers
   getters: {
     hasActive(state) {
       return state.tasks.some(t => t.status === 'active')
@@ -51,12 +53,18 @@ export const useTasksStore = defineStore('tasks', {
     monthStats(state) {
       const now = new Date()
       const mk = monthKey(now)
-      const monthTasks = (state.tasks || []).filter(t => {
-        if (t.completedAt) return monthKey(new Date(t.completedAt)) === mk
-        return t.monthKey === mk
-      })
-      const total = monthTasks.length
-      const done = monthTasks.filter(t => t.status === 'done').length
+      const tasks = state.tasks || []
+
+      const done = tasks.filter(t => {
+        if (t.status !== 'done' || !t.completedAt) return false
+        const d = new Date(t.completedAt)
+        if (Number.isNaN(d.getTime())) return false
+        return monthKey(d) === mk
+      }).length
+
+      const active = tasks.filter(t => t.status === 'active').length
+      const total = active + done
+
       const pct = percent(done, total)
       return { total, done, percent: pct }
     },
@@ -142,7 +150,7 @@ export const useTasksStore = defineStore('tasks', {
 
     mostProductiveDay(state) {
       const done = (state.tasks || []).filter(t => t.status === 'done' && t.completedAt)
-      if (!done.length) return '—'
+      if (!done.length) return 'N/A'
 
       const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
       const map = Object.create(null)
@@ -153,7 +161,7 @@ export const useTasksStore = defineStore('tasks', {
         map[key] = (map[key] || 0) + 1
       }
 
-      let best = '—'
+      let best = 'N/A'
       let bestCount = -1
       for (const k of Object.keys(map)) {
         if (map[k] > bestCount) {
@@ -206,6 +214,7 @@ export const useTasksStore = defineStore('tasks', {
     }
   },
 
+  // ACTIONS: persistence + CRUD + status transitions
   actions: {
     _save() {
       localStorage.setItem(storageKey('tasks_store'), JSON.stringify({
@@ -287,3 +296,4 @@ export const useTasksStore = defineStore('tasks', {
     }
   }
 })
+

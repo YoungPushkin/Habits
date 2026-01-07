@@ -108,18 +108,6 @@ export default {
     initials() {
       const n = String(this.userName || 'U').trim()
       return n.slice(0, 2).toUpperCase()
-    },
-
-    sidebarClass() {
-      return {
-        'sidebar--collapsed': this.collapsed
-      }
-    }
-  },
-
-  methods: {
-    onLogout() {
-      this.$emit('logout')
     }
   }
 }
@@ -138,7 +126,15 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
+  width: 30px;
+  color: var(--gold);
+  padding-left: 10px;
+}
+.brand{
+  font-family:var(--font-accent);
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  font-size:20px;
 }
 .user-block {
   display: flex;
@@ -198,5 +194,20 @@ export default {
   opacity:0;
   visibility:hidden;
   pointer-events:none;
+}
+
+.app-drawer{
+  position:fixed !important;
+  top:0;
+  left:0;
+  height:100vh !important;
+  max-height:100vh !important;
+  overflow:hidden;
+}
+.app-drawer :deep(.v-navigation-drawer__content){
+  height:100%;
+  max-height:100%;
+  overflow-y:auto;
+  overflow-x:hidden;
 }
 </style>

@@ -1,79 +1,70 @@
 <template>
-  <v-dialog :model-value="true" max-width="680" @update:modelValue="$emit('close')">
-    <v-card class="modal" rounded="xl">
-      <v-card-title class="modal-pad-title d-flex align-center justify-space-between">
-        <div class="t-h2">
-          {{ mode === 'create' ? 'Create task' : 'Edit task' }}
-        </div>
+  <BaseModal
+    :title="mode === 'create' ? 'Create task' : 'Edit task'"
+    :max-width="750"
+    :max-height="800"
+    body-class="pt-4"
+    actions-class="pa-4"
+    close-class="icon-close"
+    @close="$emit('close')"
+  >
+    <v-text-field
+      v-model="form.title"
+      label="Title"
+      variant="outlined"
+      density="comfortable"
+      :error="!!error"
+      :error-messages="error ? [error] : []"
+      hide-details="auto"
+    />
 
-        <v-btn class="icon-close" icon size="small" variant="tonal" @click="$emit('close')">
-          <v-icon icon="mdi-close" />
-        </v-btn>
-      </v-card-title>
+    <div class="mt-4">
+      <div class="t-label mb-2">Priority</div>
 
-      <v-divider />
+      <v-btn-toggle
+        v-model="form.priority"
+        mandatory
+        divided
+        rounded="lg"
+        variant="tonal"
+      >
+        <v-btn value="high">High</v-btn>
+        <v-btn value="medium">Medium</v-btn>
+        <v-btn value="low">Low</v-btn>
+      </v-btn-toggle>
+    </div>
 
-      <v-card-text class="modal-pad-body pt-4">
-        <v-text-field
-          v-model="form.title"
-          label="Title"
-          variant="outlined"
-          density="comfortable"
-          :error="!!error"
-          :error-messages="error ? [error] : []"
-          hide-details="auto"
-        />
+    <div class="mt-5">
+      <div class="t-label mb-2">Deadline</div>
 
-        <div class="mt-4">
-          <div class="t-label mb-2">Priority</div>
+      <v-chip size="small" variant="tonal" class="mb-3">
+        Selected: {{ deadlineText }}
+      </v-chip>
 
-          <v-btn-toggle
-            v-model="form.priority"
-            mandatory
-            divided
-            rounded="lg"
-            variant="tonal"
-          >
-            <v-btn value="high">High</v-btn>
-            <v-btn value="medium">Medium</v-btn>
-            <v-btn value="low">Low</v-btn>
-          </v-btn-toggle>
-        </div>
+      <v-card variant="tonal" class="panel">
+        <CalendarPicker v-model="form.deadlineDate" />
+      </v-card>
+    </div>
 
-        <div class="mt-5">
-          <div class="t-label mb-2">Deadline</div>
-
-          <v-chip size="small" variant="tonal" class="mb-3">
-            Selected: {{ deadlineText }}
-          </v-chip>
-
-          <v-card variant="tonal" class="panel">
-            <CalendarPicker v-model="form.deadlineDate" />
-          </v-card>
-        </div>
-      </v-card-text>
-
-      <v-divider />
-
-      <v-card-actions class="modal-pad-actions pa-4 d-flex justify-end">
-        <v-btn variant="tonal" rounded="pill" @click="$emit('close')">
-          Cancel
-        </v-btn>
-        <v-btn color="primary" variant="flat" rounded="pill" @click="save">
-          Save
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+    <template #actions>
+      <v-btn variant="tonal" rounded="pill" @click="$emit('close')">
+        Cancel
+      </v-btn>
+      <v-btn color="primary" variant="flat" rounded="pill" @click="save">
+        Save
+      </v-btn>
+    </template>
+  </BaseModal>
 </template>
 
 <script>
-import CalendarPicker from './layout/CalendarPicker.vue'
+import CalendarPicker from './global/CalendarPicker.vue'
 import { validateTaskPayload } from '../utils/validators.js'
+import BaseModal from './global/BaseModal.vue'
 
 export default {
   name: 'TaskModal',
-  components: { CalendarPicker },
+  components: { CalendarPicker, BaseModal },
   props: {
     mode: { type: String, default: 'create' },
     task: { type: Object, default: null }
@@ -93,7 +84,7 @@ export default {
     task: {
       immediate: true,
       handler(val) {
-        this.error = ''
+        this.clearError()
         if (!val) {
           this.form.title = ''
           this.form.deadlineDate = ''
@@ -116,6 +107,12 @@ export default {
     }
   },
   methods: {
+    setError(msg) {
+      this.error = msg || 'Check the fields'
+    },
+    clearError() {
+      this.error = ''
+    },
     save() {
       const res = validateTaskPayload({
         title: this.form.title,
@@ -124,13 +121,22 @@ export default {
       })
 
       if (!res.ok) {
-        this.error = res.error || 'Check the fields'
+        this.setError(res.error || 'Check the fields')
         return
       }
 
-      this.error = ''
+      this.clearError()
       this.$emit('save', res.payload)
     }
   }
 }
 </script>
+
+<style scoped>
+.panel{
+  padding:14px;
+  border-radius:var(--r-md);
+  border:1px solid var(--border2);
+  background:rgba(255,255,255,.03);
+}
+</style>

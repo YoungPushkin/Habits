@@ -1,8 +1,8 @@
 <template>
   <v-card class="card" variant="tonal">
-    <v-card-text class="d-flex align-center justify-space-between ga-4 flex-wrap">
-      <div class="d-flex align-center ga-3 min-w-0">
-        <div class="d-flex align-center ga-2 flex-wrap">
+    <v-card-text class="task-row">
+      <div class="task-main">
+        <div class="task-title-group">
           <span class="item-title">{{ task.title }}</span>
 
           <v-chip size="x-small" variant="tonal" :color="priorityColor">
@@ -16,7 +16,7 @@
         <span>{{ deadlineText }}</span>
       </v-chip>
 
-      <div class="d-flex align-center ga-2">
+      <div class="task-actions">
         <v-btn
           variant="tonal"
           rounded="lg"
@@ -102,3 +102,49 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.menu{
+  min-width:180px;
+  border-radius:var(--r-md);
+  border:1px solid var(--border2);
+  background:rgba(11,11,11,.92);
+  backdrop-filter:blur(14px);
+}
+
+.item-title{
+  font-size:15px;
+  font-weight:500;
+  color:var(--text);
+}
+
+.bad :deep(.v-list-item-title),
+.bad i{
+  color:#ef4444;
+}
+
+.task-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.task-main{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.task-title-group{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.task-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+</style>

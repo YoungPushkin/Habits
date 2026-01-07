@@ -2,16 +2,16 @@
 import TaskModalMixin from '../mixins/TaskModal.mixin'
 import TaskCard from '../components/TaskCard.vue'
 import TaskModal from '../components/TaskModal.vue'
-import HfCarousel from '../components/layout/HfCarousel.vue'
+import HfCarousel from '../components/global/HfCarousel.vue'
+import BaseCard from '../components/global/BaseCard.vue'
+import PageHeader from '../components/global/PageHeader.vue'
 
 export default {
   name: 'TasksView',
   mixins: [TaskModalMixin],
-  components: { TaskCard, TaskModal, HfCarousel },
+  components: { TaskCard, TaskModal, HfCarousel, BaseCard, PageHeader },
   data() {
-    return {
-      priorityIndex: 0
-    }
+    return { priorityIndex: 0 }
   },
   computed: {
     hasActive() { return this.tasksStore.hasActive },
@@ -25,12 +25,8 @@ export default {
         { key: 'low', label: 'Low priority', color: 'info', tasks: this.activeLow }
       ].filter(s => Array.isArray(s.tasks) && s.tasks.length)
     },
-    priorityTotal() {
-      return this.prioritySlides.length
-    },
-    currentSlide() {
-      return this.prioritySlides[this.priorityIndex] || null
-    }
+    priorityTotal() { return this.prioritySlides.length },
+    currentSlide() { return this.prioritySlides[this.priorityIndex] || null }
   },
   watch: {
     prioritySlides(list) {
@@ -59,89 +55,82 @@ export default {
 
 <template>
   <section class="app-page">
-    <div class="page-head">
-      <div class="page-title">
-        <h1 class="t-h1 text-gold">Tasks</h1>
-        <p class="t-sub text-gold">Plan and complete your key actions.</p>
-      </div>
-
-      <div class="page-actions">
+    <PageHeader title="Tasks" subtitle="Plan and complete your key actions.">
+      <template #meta>
         <v-btn variant="tonal" rounded="pill" color="primary" @click="openTaskCreate">
           <i class="bi bi-plus-lg" style="margin-right:8px;"></i>
           Add task
         </v-btn>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <v-alert
       v-if="!hasActive"
       type="info"
       variant="tonal"
       density="comfortable"
-      class="mt-3"
+      class="tasks-empty"
     >
       You have no active tasks yet. Create your first task to start moving forward.
     </v-alert>
 
-    <v-card v-else class="card" variant="tonal">
-      <v-card-title class="d-flex align-center justify-start flex-wrap ga-2">
-        <v-btn
-          icon
-          size="small"
-          variant="tonal"
-          class="btn-icon act-gold"
-          :disabled="priorityIndex <= 0"
-          @click="priorityPrev"
-        >
-          <i class="bi bi-chevron-left"></i>
-        </v-btn>
+    <BaseCard v-else title="Tasks by priority" body-class="card-scroll">
+      <template #meta>
+        <div class="carousel-controls">
+          <v-btn
+            icon
+            size="small"
+            variant="tonal"
+            class="btn-icon act-gold"
+            :disabled="priorityIndex <= 0"
+            @click="priorityPrev"
+          >
+            <i class="bi bi-chevron-left"></i>
+          </v-btn>
 
-        <v-chip
-          v-if="currentSlide"
-          size="small"
-          variant="tonal"
-          :color="currentSlide.color || 'primary'"
-        >
-          {{ currentSlide.label }} • {{ currentSlide.tasks.length }} tasks
-        </v-chip>
+          <v-chip
+            v-if="currentSlide"
+            size="small"
+            variant="tonal"
+            :color="currentSlide.color || 'primary'"
+          >
+            {{ currentSlide.label }} & {{ currentSlide.tasks.length }} tasks
+          </v-chip>
 
-        <v-btn
-          icon
-          size="small"
-          variant="tonal"
-          class="btn-icon act-gold"
-          :disabled="priorityIndex >= priorityTotal - 1"
-          @click="priorityNext"
-        >
-          <i class="bi bi-chevron-right"></i>
-        </v-btn>
-      </v-card-title>
-
-      <v-divider />
-
-      <v-card-text class="pt-4">
-        <div v-if="!prioritySlides.length" class="t-body">
-          No active tasks to show.
+          <v-btn
+            icon
+            size="small"
+            variant="tonal"
+            class="btn-icon act-gold"
+            :disabled="priorityIndex >= priorityTotal - 1"
+            @click="priorityNext"
+          >
+            <i class="bi bi-chevron-right"></i>
+          </v-btn>
         </div>
+      </template>
 
-        <div v-else>
-          <HfCarousel ref="priorityCarousel" :items="prioritySlides">
-            <template #default="{ item }">
-              <div class="stack">
-                <TaskCard
-                  v-for="t in item.tasks"
-                  :key="t.id"
-                  :task="t"
-                  @complete="completeTask"
-                  @edit="openTaskEdit"
-                  @delete="deleteTask"
-                />
-              </div>
-            </template>
-          </HfCarousel>
-        </div>
-      </v-card-text>
-    </v-card>
+      <div v-if="!prioritySlides.length" class="t-body">
+        No active tasks to show.
+      </div>
+
+      <template v-else>
+        <HfCarousel ref="priorityCarousel" :items="prioritySlides">
+          <template #default="{ item }">
+            <div class="stack">
+              <TaskCard
+                v-for="t in item.tasks"
+                :key="t.id"
+                :task="t"
+                @complete="completeTask"
+                @edit="openTaskEdit"
+                @delete="deleteTask"
+              />
+            </div>
+          </template>
+        </HfCarousel>
+      </template>
+    </BaseCard>
 
     <TaskModal
       v-if="showModal && modalType === 'task'"
@@ -152,3 +141,9 @@ export default {
     />
   </section>
 </template>
+
+
+
+
+
+

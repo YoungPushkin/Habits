@@ -1,6 +1,6 @@
 <template>
   <v-app :data-accent="ui.accent">
-    <div class="app-root">
+    <div>
       <WelcomeView
         v-if="screen === 'welcome'"
         @start="screen = 'register'"
@@ -21,7 +21,6 @@
 
       <v-layout v-else class="app-main">
         <Sidebar
-          class="sidebar"
           :collapsed="sidebarCollapsed"
           @toggle="toggleSidebar"
           @logout="logout"
@@ -55,7 +54,7 @@
 import WelcomeView from './views/authentication/WelcomeView.vue'
 import RegisterView from './views/authentication/RegisterView.vue'
 import LoginView from './views/authentication/LoginView.vue'
-import Sidebar from './components/layout/Sidebar.vue'
+import Sidebar from './components/global/Sidebar.vue'
 
 import { useUiStore } from './stores/settings'
 import { useUsersStore } from './stores/users'

@@ -162,3 +162,45 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.cal-title{
+  font-family:var(--font-accent);
+  font-size:16px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+
+.cal-weekdays{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+  margin:0 0 8px 0;
+}
+.cal-weekday{
+  text-align:center;
+  font-size:12px;
+  color:rgba(245,245,245,.55);
+  padding:6px 0;
+}
+
+.cal-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+}
+
+.cal-empty{
+  opacity:0;
+  pointer-events:none;
+}
+
+.cal-selected :deep(.v-btn__content){
+  color:#050505;
+  font-weight:700;
+}
+
+@media (max-width:520px){
+  .cal-title{font-size:15px}
+}
+</style>

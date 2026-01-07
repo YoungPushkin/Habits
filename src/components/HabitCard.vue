@@ -7,32 +7,30 @@
       boxShadow: '0 0 0 1px rgba(74,222,128,.35), 0 18px 45px rgba(0,0,0,.75)'
     } : null"
   >
-    <v-card-text class="d-flex flex-column ga-3">
-      <div class="d-flex align-center justify-space-between flex-wrap ga-3">
-        <div class="d-flex align-center ga-3 min-w-0">
+    <v-card-text class="card-stack">
+      <div class="card-head">
+        <div class="card-head-main">
           <v-btn
+            v-if="showToggle"
             icon
             variant="text"
             class="habit-toggle"
             :ripple="false"
-            :disabled="doneToday || !dueToday"
+            :disabled="!dueToday"
             @click="toggle"
           >
             <i v-if="doneToday" class="bi bi-check-lg act-ok"></i>
             <i v-else class="bi bi-circle"></i>
           </v-btn>
 
-          <div class="d-flex align-center ga-2 flex-wrap min-w-0">
+          <div class="habit-meta">
             <span class="item-title">{{ habit.name }}</span>
 
             <v-chip v-if="habit.isDaily" size="x-small" variant="tonal" color="primary">
               Every day
             </v-chip>
 
-            <div
-              v-if="!habit.isDaily && selectedDays.length"
-              class="d-flex align-center flex-wrap ga-1"
-            >
+            <div v-if="!habit.isDaily && selectedDays.length" class="habit-days">
               <v-chip
                 v-for="d in selectedDays"
                 :key="d"
@@ -44,22 +42,14 @@
               </v-chip>
             </div>
 
-            <div class="d-flex align-center ga-2">
-              <span
-                :style="{
-                  width: '10px',
-                  height: '10px',
-                  borderRadius: '999px',
-                  background: categoryColor,
-                  display: 'inline-block'
-                }"
-              ></span>
+            <div class="habit-category">
+              <span class="habit-dot" :style="{ background: categoryColor }"></span>
               <span class="t-label">{{ categoryLabel }}</span>
             </div>
           </div>
         </div>
 
-        <div class="d-flex align-center ga-2">
+        <div class="card-head-actions">
           <v-chip
             size="small"
             :color="doneToday ? 'success' : 'warning'"
@@ -68,7 +58,7 @@
             {{ doneToday ? 'Done today' : 'Pending' }}
           </v-chip>
 
-          <v-menu location="bottom end">
+          <v-menu v-if="showMenu" location="bottom end">
             <template #activator="{ props }">
               <v-btn v-bind="props" icon variant="tonal" size="small" class="btn-icon">
                 <i class="bi bi-three-dots-vertical"></i>
@@ -99,7 +89,7 @@
         size="small"
         variant="tonal"
         color="warning"
-        class="align-self-start"
+        class="chip-start"
       >
         <i class="bi bi-calendar2-x" style="margin-right:6px;"></i>
         Not scheduled for today
@@ -109,19 +99,16 @@
 </template>
 
 <script>
-const CATEGORY_MAP = {
-  sport: { label: 'Sport', color: '#ef4444' },
-  study: { label: 'Study', color: '#d4af37' },
-  health: { label: 'Health', color: '#22c55e' },
-  work: { label: 'Work', color: '#3b82f6' },
-  other: { label: 'Other', color: '#a855f7' }
-}
+import { HABIT_CATEGORY_MAP } from '../constants/habitCategories.js'
+
 export default {
   name: 'HabitCard',
   props: {
     habit: { type: Object, required: true },
     doneToday: { type: Boolean, default: false },
-    dueToday: { type: Boolean, default: true }
+    dueToday: { type: Boolean, default: true },
+    showToggle: { type: Boolean, default: true },
+    showMenu: { type: Boolean, default: true }
   },
   emits: ['toggle', 'edit', 'delete'],
   data() {
@@ -131,10 +118,10 @@ export default {
   },
   computed: {
   categoryLabel() {
-    return (CATEGORY_MAP[this.habit.category] || CATEGORY_MAP.other).label
+    return (HABIT_CATEGORY_MAP[this.habit.category] || HABIT_CATEGORY_MAP.other).label
   },
   categoryColor() {
-    return (CATEGORY_MAP[this.habit.category] || CATEGORY_MAP.other).color
+    return (HABIT_CATEGORY_MAP[this.habit.category] || HABIT_CATEGORY_MAP.other).color
   },
   selectedDays() {
     const days = Array.isArray(this.habit.days) ? this.habit.days : []
@@ -143,7 +130,7 @@ export default {
   },
   methods: {
     toggle() {
-      if (this.doneToday || !this.dueToday) return
+      if (!this.dueToday) return
       this.$emit('toggle', this.habit.id)
     },
     onEdit() {
@@ -155,3 +142,81 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.menu{
+  min-width:180px;
+  border-radius:var(--r-md);
+  border:1px solid var(--border2);
+  background:rgba(11,11,11,.92);
+  backdrop-filter:blur(14px);
+}
+
+.item-title{
+  font-size:15px;
+  font-weight:500;
+  color:var(--text);
+}
+
+.bad :deep(.v-list-item-title),
+.bad i{
+  color:#ef4444;
+}
+
+.habit-toggle :deep(.v-btn__overlay),
+.habit-toggle :deep(.v-btn__underlay){opacity:0 !important}
+
+.habit-toggle i{font-size:14px;color:var(--gold)}
+.habit-toggle .bi-check-lg{font-size:18px}
+
+.card-stack{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.card-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.card-head-main{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.card-head-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.habit-meta{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  min-width:0;
+}
+.habit-days{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  flex-wrap:wrap;
+}
+.habit-category{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.habit-dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  display:inline-block;
+}
+.chip-start{
+  align-self:flex-start;
+}
+</style>

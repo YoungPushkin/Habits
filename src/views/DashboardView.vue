@@ -7,12 +7,14 @@ import HabitModal from '../components/HabitModal.vue'
 import TaskModal from '../components/TaskModal.vue'
 import HabitCard from '../components/HabitCard.vue'
 import TaskCard from '../components/TaskCard.vue'
-import HfCarousel from '../components/layout/HfCarousel.vue'
+import HfCarousel from '../components/global/HfCarousel.vue'
+import BaseCard from '../components/global/BaseCard.vue'
+import PageHeader from '../components/global/PageHeader.vue'
 
 export default {
   name: 'DashboardView',
   mixins: [CarouselMixin, HabitModalMixin, TaskModalMixin],
-  components: { HabitModal, TaskModal, HabitCard, TaskCard, HfCarousel },
+  components: { HabitModal, TaskModal, HabitCard, TaskCard, HfCarousel, BaseCard, PageHeader },
 
   computed: {
     todayHabitsForUI() { return this.habitsStore.todayHabitsForUI },
@@ -26,108 +28,83 @@ export default {
 
 <template>
   <section class="dashboard app-page">
-    <div class="page-head">
-      <div class="page-title">
-        <h1 class="t-h1 text-gold">Today overview</h1>
-        <p class="t-sub text-gold">Habits, tasks and progress for your day.</p>
-      </div>
-
-      <div class="page-meta">
-        <v-chip size="small" variant="tonal" color="primary">
-          <span class="t-label" style="margin-right:8px;">Focus mode</span>
-          <span class="dot"></span>
-          <span style="margin-left:8px;">On</span>
-        </v-chip>
-
+    <PageHeader title="Today overview" subtitle="Habits, tasks and progress for your day.">
+      <template #meta>
         <v-chip size="small" variant="tonal">
           <i class="bi bi-calendar2" style="margin-right:8px;"></i>
           {{ todayLabel }}
         </v-chip>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <div class="stats">
-      <v-card class="card" variant="tonal">
-        <v-card-text>
-          <div class="d-flex align-center justify-space-between mb-2">
-            <div class="t-label">Habits</div>
-            <div class="t-label">Day completion</div>
-          </div>
+      <BaseCard title="Habits">
+        <template #meta>
+          <div class="t-label">Day completion</div>
+        </template>
 
-          <div class="d-flex align-end ga-3 mb-3">
-            <div class="t-value">{{ habitsStore.completionPercent }}%</div>
-            <div class="t-cap">{{ habitsStore.todayDone }} of {{ habitsStore.todayTotal }} habits</div>
-          </div>
+        <div class="stat-row">
+          <div class="t-value">{{ habitsStore.completionPercent }}%</div>
+          <div class="t-cap">{{ habitsStore.todayDone }} of {{ habitsStore.todayTotal }} habits</div>
+        </div>
 
-          <v-progress-linear
-            :model-value="habitsStore.completionPercent"
-            height="8"
-            rounded
-            color="primary"
+        <v-progress-linear
+          :model-value="habitsStore.completionPercent"
+          height="8"
+          rounded
+          color="primary"
+        />
+      </BaseCard>
+
+      <BaseCard title="Discipline">
+        <template #meta>
+          <div class="t-label">Current streak</div>
+        </template>
+
+        <div class="stat-row">
+          <div class="t-value">{{ habitsStore.currentStreak }} days</div>
+          <div class="t-cap">days in a row</div>
+        </div>
+
+        <div class="streak">
+          <span
+            v-for="n in 7"
+            :key="n"
+            class="streak-dot"
+            :style="n <= Math.min(7, Math.round(habitsStore.currentStreak / 2)) ? {
+              background: 'linear-gradient(90deg,var(--gold),var(--gold2))',
+              borderColor: 'rgba(212,175,55,.45)',
+              boxShadow: '0 10px 22px rgba(212,175,55,.16)'
+            } : null"
+          ></span>
+        </div>
+      </BaseCard>
+
+      <BaseCard title="Month">
+        <template #meta>
+          <div class="t-label">Tasks done</div>
+        </template>
+
+        <div class="stat-row">
+          <div class="t-value">{{ tasksStore.monthTasksDone }}</div>
+          <div class="t-cap">{{ tasksStore.monthTasksTotal }} total tasks</div>
+        </div>
+
+        <div class="bars">
+          <span
+            v-for="n in 5"
+            :key="n"
+            class="bar"
+            :class="{ 'is-on': n <= Math.min(4, Math.round(tasksStore.monthTasksPercent / 25)) }"
           />
-        </v-card-text>
-      </v-card>
-
-      <v-card class="card" variant="tonal">
-        <v-card-text>
-          <div class="d-flex align-center justify-space-between mb-2">
-            <div class="t-label">Discipline</div>
-            <div class="t-label">Best streak</div>
-          </div>
-
-          <div class="d-flex align-end ga-3 mb-3">
-            <div class="t-value">{{ habitsStore.bestStreak }} days</div>
-            <div class="t-cap">Longest chain</div>
-          </div>
-
-          <div class="streak">
-            <span
-              v-for="n in 7"
-              :key="n"
-              class="streak-dot"
-              :style="n <= habitsStore.disciplineDots ? {
-                background: 'linear-gradient(90deg,var(--gold),var(--gold2))',
-                borderColor: 'rgba(212,175,55,.45)',
-                boxShadow: '0 10px 22px rgba(212,175,55,.16)'
-              } : null"
-            ></span>
-          </div>
-        </v-card-text>
-      </v-card>
-
-      <v-card class="card" variant="tonal">
-        <v-card-text>
-          <div class="d-flex align-center justify-space-between mb-2">
-            <div class="t-label">Month</div>
-            <div class="t-label">Tasks done</div>
-          </div>
-
-          <div class="d-flex align-end ga-3 mb-3">
-            <div class="t-value">{{ tasksStore.monthTasksDone }}</div>
-            <div class="t-cap">{{ tasksStore.monthTasksTotal }} total tasks</div>
-          </div>
-
-          <div class="bars">
-            <span
-              v-for="n in 5"
-              :key="n"
-              class="bar"
-              :class="{ 'is-on': n <= Math.min(4, Math.round(tasksStore.monthTasksPercent / 25)) }"
-            />
-          </div>
-        </v-card-text>
-      </v-card>
+        </div>
+      </BaseCard>
     </div>
 
     <div class="middle-row">
-      <v-card class="card" variant="tonal">
-        <v-card-title class="d-flex align-center justify-space-between">
-          <div>
-            <div class="t-h2">Habits for today</div>
-            <p class="t-sub">Keep your promises to yourself.</p>
-          </div>
-
-          <div class="d-flex ga-2">
+      <BaseCard title="Habits for today" subtitle="Keep your promises to yourself.">
+        <template #meta>
+          <div class="carousel-controls">
             <v-btn
               icon
               size="small"
@@ -154,43 +131,30 @@ export default {
               <i class="bi bi-chevron-right"></i>
             </v-btn>
           </div>
-        </v-card-title>
+        </template>
 
-        <v-divider />
+        <div v-if="todayHabitsForUI.length === 0" class="t-body">
+          No habits for today
+        </div>
 
-        <v-card-text>
-          <div v-if="todayHabitsForUI.length === 0" class="t-body">
-            No habits for today
-          </div>
+        <template v-else>
+          <HfCarousel ref="habitsCarousel" :items="todayHabitsForUI" @index="onHabitsIndex">
+            <template #default="{ item }">
+              <HabitCard
+                :habit="item"
+                :done-today="item.doneToday"
+                :due-today="true"
+                @toggle="toggleHabit"
+                @delete="deleteHabit"
+                @edit="openHabitEdit"
+              />
+            </template>
+          </HfCarousel>
+        </template>
+      </BaseCard>
 
-          <div v-else>
-            <HfCarousel ref="habitsCarousel" :items="todayHabitsForUI" @index="onHabitsIndex">
-              <template #default="{ item }">
-                <HabitCard
-                  :habit="item"
-                  :done-today="item.doneToday"
-                  :due-today="true"
-                  @toggle="toggleHabit"
-                  @delete="deleteHabit"
-                  @edit="openHabitEdit"
-                />
-              </template>
-            </HfCarousel>
-          </div>
-        </v-card-text>
-      </v-card>
-
-      <v-card class="card" variant="tonal">
-        <v-card-title>
-          <div>
-            <div class="t-h2">Quick actions</div>
-            <p class="t-sub">Create new tasks and habits.</p>
-          </div>
-        </v-card-title>
-
-        <v-divider />
-
-        <v-card-text class="d-flex flex-column ga-3">
+      <BaseCard title="Quick actions" subtitle="Create new tasks and habits.">
+        <div class="quick-actions">
           <v-btn variant="tonal" rounded="pill" color="primary" @click="openTaskCreate">
             <i class="bi bi-plus-lg" style="margin-right:8px;"></i>
             Add task
@@ -200,19 +164,13 @@ export default {
             <i class="bi bi-plus-lg" style="margin-right:8px;"></i>
             Add habit
           </v-btn>
-        </v-card-text>
-      </v-card>
+        </div>
+      </BaseCard>
     </div>
 
-    <div class="bottom-row">
-      <v-card class="card" variant="tonal">
-        <v-card-title class="d-flex align-center justify-space-between flex-wrap ga-2">
-          <div>
-            <div class="t-h2">Important timeline</div>
-            <p class="t-sub">High priority and near deadlines.</p>
-          </div>
-
-          <div class="d-flex ga-2">
+    <BaseCard title="Important timeline" subtitle="High priority and near deadlines.">
+        <template #meta>
+          <div class="carousel-controls">
             <v-btn
               icon
               size="small"
@@ -239,35 +197,30 @@ export default {
               <i class="bi bi-chevron-right"></i>
             </v-btn>
           </div>
-        </v-card-title>
+        </template>
 
-        <v-divider />
+        <v-alert
+          v-if="!importantTasks.length"
+          type="info"
+          variant="tonal"
+          density="comfortable"
+        >
+          No important tasks right now.
+        </v-alert>
 
-        <v-card-text>
-          <v-alert
-            v-if="!importantTasks.length"
-            type="info"
-            variant="tonal"
-            density="comfortable"
-          >
-            No important tasks right now.
-          </v-alert>
-
-          <div v-else>
-            <HfCarousel ref="tasksCarousel" :items="importantTasks" @index="onTasksIndex">
-              <template #default="{ item }">
-                <TaskCard
-                  :task="item"
-                  @complete="completeTask"
-                  @edit="openTaskEdit"
-                  @delete="deleteTask"
-                />
-              </template>
-            </HfCarousel>
-          </div>
-        </v-card-text>
-      </v-card>
-    </div>
+        <template v-else>
+          <HfCarousel ref="tasksCarousel" :items="importantTasks" @index="onTasksIndex">
+            <template #default="{ item }">
+              <TaskCard
+                :task="item"
+                @complete="completeTask"
+                @edit="openTaskEdit"
+                @delete="deleteTask"
+              />
+            </template>
+          </HfCarousel>
+        </template>
+      </BaseCard>
 
     <HabitModal
       v-if="showModal && modalType === 'habit'"

@@ -5,13 +5,6 @@ let dayWatcherStarted = false
 let dayWatcherTimer = null
 
 export default {
-  data() {
-    return {
-    
-      _dayWatcherLocalStarted: false
-    }
-  },
-
   created() {
     if (dayWatcherStarted) return
 
@@ -19,9 +12,12 @@ export default {
     const tasksStore = useTasksStore()
 
     dayWatcherStarted = true
-    this._dayWatcherLocalStarted = true
 
     let lastISO = habitsStore.todayISO
+
+    // ensure discipline stats (streaks/completion) are in sync on load
+    habitsStore.ensureTodayBuckets?.()
+    habitsStore.syncTodayCompletion?.()
 
     dayWatcherTimer = setInterval(() => {
       const nowISO = habitsStore.todayISO
@@ -30,6 +26,8 @@ export default {
         lastISO = nowISO
         habitsStore.initFromStorage?.()
         tasksStore.initFromStorage?.()
+        habitsStore.ensureTodayBuckets?.()
+        habitsStore.syncTodayCompletion?.()
       } else {
         habitsStore.ensureTodayBuckets?.()
         habitsStore.syncTodayCompletion?.()

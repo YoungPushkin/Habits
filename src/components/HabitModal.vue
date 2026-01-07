@@ -1,113 +1,97 @@
 <template>
-  <v-dialog :model-value="true" max-width="520" @update:modelValue="$emit('close')">
-    <v-card class="modal" rounded="xl">
-      <v-card-title class="modal-pad-title d-flex align-center justify-space-between">
-        <div class="t-h2">
-          {{ mode === 'create' ? 'Create habit' : 'Edit habit' }}
-        </div>
-        <v-btn class="btn-icon" icon size="small" variant="tonal" @click="$emit('close')">
-          <v-icon icon="mdi-close" />
-        </v-btn>
-      </v-card-title>
+  <BaseModal
+    :title="mode === 'create' ? 'Create habit' : 'Edit habit'"
+    :max-width="520"
+    body-class="pt-2"
+    @close="$emit('close')"
+  >
+    <div>
+      <div class="t-label mb-2">Name</div>
+      <v-text-field
+        v-model="form.name"
+        variant="outlined"
+        density="comfortable"
+        :error="!!error"
+        :error-messages="error ? [error] : []"
+        hide-details="auto"
+        @keydown.enter.prevent="save"
+      />
+    </div>
 
-      <v-divider />
-
-      <v-card-text class="modal-pad-body pt-2">
-        <div>
-          <div class="t-label mb-2">Name</div>
-          <v-text-field
-            v-model="form.name"
-            variant="outlined"
-            density="comfortable"
-            :error="!!error"
-            :error-messages="error ? [error] : []"
-            hide-details="auto"
-            @keydown.enter.prevent="save"
-          />
-        </div>
-
-        <div class="mt-4">
-          <div class="t-label mb-2">Category</div>
-          <v-row dense>
-            <v-col v-for="c in categories" :key="c.value" cols="12" sm="6">
-              <v-btn
-                block
-                variant="tonal"
-                :color="form.category === c.value ? 'primary' : undefined"
-                @click="form.category = c.value"
-              >
-                <span
-                  :style="{
-                    width: '10px',
-                    height: '10px',
-                    borderRadius: '999px',
-                    background: c.color,
-                    display: 'inline-block',
-                    marginRight: '8px'
-                  }"
-                ></span>
-                {{ c.label }}
-              </v-btn>
-            </v-col>
-          </v-row>
-        </div>
-
-        <div class="mt-4">
-          <div class="t-label mb-2">Repeat</div>
-          <v-btn-toggle v-model="repeatMode" mandatory density="comfortable">
-            <v-btn value="daily">Every day</v-btn>
-            <v-btn value="days">Specific days</v-btn>
-          </v-btn-toggle>
-        </div>
-
-        <div v-if="repeatMode === 'days'" class="mt-4">
-          <div class="t-label mb-2">Days of week</div>
-
-          <div class="d-flex flex-wrap ga-2">
-            <v-btn
-              v-for="(d, idx) in weekLabels"
-              :key="idx"
-              size="small"
-              :variant="isSelected(idx) ? 'flat' : 'tonal'"
-              :color="isSelected(idx) ? 'primary' : undefined"
-              class="day-chip"
-              @click="toggleIdx(idx)"
-            >
-              {{ d }}
-            </v-btn>
-          </div>
-
-          <v-alert
-            v-if="daysError"
-            type="error"
+    <div class="mt-4">
+      <div class="t-label mb-2">Category</div>
+      <v-row dense>
+        <v-col v-for="c in categories" :key="c.value" cols="12" sm="6">
+          <v-btn
+            block
             variant="tonal"
-            density="comfortable"
-            class="mt-3"
+            :color="form.category === c.value ? 'primary' : undefined"
+            @click="form.category = c.value"
           >
-            Select at least one day
-          </v-alert>
-        </div>
-      </v-card-text>
+            <span
+              :style="{
+                width: '10px',
+                height: '10px',
+                borderRadius: '999px',
+                background: c.color,
+                display: 'inline-block',
+                marginRight: '8px'
+              }"
+            ></span>
+            {{ c.label }}
+          </v-btn>
+        </v-col>
+      </v-row>
+    </div>
 
-      <v-divider />
+    <div class="mt-4">
+      <div class="t-label mb-2">Repeat</div>
+      <v-btn-toggle v-model="repeatMode" mandatory density="comfortable">
+        <v-btn value="daily">Every day</v-btn>
+        <v-btn value="days">Specific days</v-btn>
+      </v-btn-toggle>
+    </div>
 
-      <v-card-actions class="modal-pad-actions d-flex justify-end">
-        <v-btn variant="tonal" rounded="pill" @click="$emit('close')">
-          Cancel
+    <div v-if="repeatMode === 'days'" class="mt-4">
+      <div class="t-label mb-2">Days of week</div>
+
+      <div class="d-flex flex-wrap ga-2">
+        <v-btn
+          v-for="(d, idx) in weekLabels"
+          :key="idx"
+          size="small"
+          :variant="isSelected(idx) ? 'flat' : 'tonal'"
+          :color="isSelected(idx) ? 'primary' : undefined"
+          class="day-chip"
+          @click="toggleIdx(idx)"
+        >
+          {{ d }}
         </v-btn>
-        <v-btn class="btn-primary" variant="flat" @click="save">
-          {{ mode === 'create' ? 'Save habit' : 'Save changes' }}
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+      </div>
+
+      <FormErrorAlert :message="daysError ? error : ''" alert-class="mt-3" />
+    </div>
+
+    <template #actions>
+      <v-btn variant="tonal" rounded="pill" @click="$emit('close')">
+        Cancel
+      </v-btn>
+      <v-btn class="btn-primary" variant="flat" @click="save">
+        {{ mode === 'create' ? 'Save habit' : 'Save changes' }}
+      </v-btn>
+    </template>
+  </BaseModal>
 </template>
 
 <script>
 import { validateHabitPayload } from '../utils/validators.js'
+import BaseModal from './global/BaseModal.vue'
+import { HABIT_CATEGORIES } from '../constants/habitCategories.js'
+import FormErrorAlert from './form/FormErrorAlert.vue'
 
 export default {
   name: 'HabitModal',
+  components: { BaseModal, FormErrorAlert },
   props: {
     mode: { type: String, default: 'create' },
     habit: { type: Object, default: null }
@@ -117,13 +101,7 @@ export default {
     return {
       error: '',
       weekLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      categories: [
-        { value: 'sport', label: 'Sport', color: '#ef4444' },
-        { value: 'study', label: 'Study', color: '#d4af37' },
-        { value: 'health', label: 'Health', color: '#22c55e' },
-        { value: 'work', label: 'Work', color: '#3b82f6' },
-        { value: 'other', label: 'Other', color: '#a855f7' }
-      ],
+      categories: HABIT_CATEGORIES,
       repeatMode: 'daily',
       daysError: false,
       form: {
@@ -137,7 +115,7 @@ export default {
     habit: {
       immediate: true,
       handler(val) {
-        this.daysError = false
+        this.clearError()
 
         if (!val) {
           this.form = { name: '', category: 'other', daysIdx: [] }
@@ -157,6 +135,14 @@ export default {
     }
   },
   methods: {
+    setError(msg, code) {
+      this.error = msg || 'Check the fields'
+      this.daysError = code === 'DAYS'
+    },
+    clearError() {
+      this.error = ''
+      this.daysError = false
+    },
     isSelected(idx) {
       return Array.isArray(this.form.daysIdx) && this.form.daysIdx.includes(idx)
     },
@@ -206,15 +192,17 @@ export default {
       })
 
       if (!res.ok) {
-        this.error = res.error || 'Check the fields'
-        this.daysError = res.code === 'DAYS'
+        this.setError(res.error || 'Check the fields', res.code)
         return
       }
 
-      this.error = ''
-      this.daysError = false
+      this.clearError()
       this.$emit('save', res.payload)
     }
   }
 }
 </script>
+
+<style scoped>
+.day-chip{border:1px solid rgba(212,175,55,.16)}
+</style>

@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
-import { isoToday, startOfDay, addDays } from '../utils/date.js'
+import { isoToday, isoFromDate, startOfDay, addDays } from '../utils/date.js'
 import { storageKey } from '../utils/storageKey.js'
 
+// HELPERS: week math and days normalization for UI/logic
 function weekIndex(date = new Date()) {
   const js = date.getDay()
   return (js + 6) % 7
@@ -45,6 +46,7 @@ function buildHabitsUI(habits, todayDoneMap, weekIdx, options = {}) {
 }
 
 export const useHabitsStore = defineStore('habits', {
+  // STATE: habits data + per-day completion
   state: () => ({
     habits: [],
     nextId: 1,
@@ -54,6 +56,7 @@ export const useHabitsStore = defineStore('habits', {
     currentDayKey: isoToday()
   }),
 
+  // GETTERS: derived stats and UI-ready slices
   getters: {
     todayISO(state) {
       return state.currentDayKey
@@ -84,13 +87,16 @@ export const useHabitsStore = defineStore('habits', {
       const map = this.todayDoneMap
       return this.todayHabits.reduce((acc, h) => acc + (map[h.id] ? 1 : 0), 0)
     },
+    todayAnyDone() {
+      const map = this.todayDoneMap || {}
+      return Object.values(map).some(Boolean)
+    },
     completionPercent() {
       return this.todayTotal === 0 ? 0 : Math.round((this.todayDone / this.todayTotal) * 100)
     },
 
-    isDayFullyCompleted() {
-      if (this.todayTotal === 0) return false
-      return this.todayDone === this.todayTotal
+    isDayCounted() {
+      return this.todayAnyDone
     },
     activeDays(state) {
       return Object.keys(state.completedDays || {}).filter(d => state.completedDays[d]).length
@@ -105,18 +111,24 @@ export const useHabitsStore = defineStore('habits', {
       const today = this.todayISO
       const completedDays = state.completedDays || {}
 
-      const dates = Object.keys(completedDays)
-        .filter(d => completedDays[d])
-        .sort()
-        .reverse()
+      const parts = today.split('-').map(Number)
+      if (parts.length !== 3 || parts.some(n => Number.isNaN(n))) return 0
+      const todayDate = new Date(parts[0], parts[1] - 1, parts[2])
 
-      if (!dates.length || dates[0] !== today) return 0
+      let baseDate = null
+      if (completedDays[today]) {
+        baseDate = todayDate
+      } else {
+        const yesterday = isoFromDate(addDays(todayDate, -1))
+        if (!completedDays[yesterday]) return 0
+        baseDate = addDays(todayDate, -1)
+      }
 
-      let streak = 1
-      for (let i = 1; i < dates.length; i++) {
-        const diff = Math.floor((new Date(dates[i - 1]) - new Date(dates[i])) / 86400000)
-        if (diff === 1) streak++
-        else break
+      let streak = 0
+      let cursor = baseDate
+      while (completedDays[isoFromDate(cursor)]) {
+        streak++
+        cursor = addDays(cursor, -1)
       }
       return streak
     },
@@ -154,9 +166,45 @@ export const useHabitsStore = defineStore('habits', {
 
     bestStreakCapped14() {
       return Math.min(14, Number(this.bestStreak || 0))
+    },
+
+    weakestHabit(state) {
+      const habits = Array.isArray(state.habits) ? state.habits : []
+      if (!habits.length) return null
+
+      const doneByDate = state.doneByDate || {}
+      const completion = habits.map(habit => {
+        let due = 0
+        let done = 0
+
+        Object.keys(doneByDate).forEach(date => {
+          const parts = String(date).split('-').map(Number)
+          if (parts.length !== 3 || parts.some(n => Number.isNaN(n))) return
+          const day = new Date(parts[0], parts[1] - 1, parts[2])
+          const idx = weekIndex(day)
+
+          const isDue = habit.isDaily ? true : (Array.isArray(habit.days) ? !!habit.days[idx] : false)
+          if (!isDue) return
+
+          due++
+          if (doneByDate[date] && doneByDate[date][habit.id]) done++
+        })
+
+        const percent = due === 0 ? 0 : Math.round((done / due) * 100)
+        return { habit, percent, due, done }
+      })
+
+      completion.sort((a, b) => {
+        if (a.percent !== b.percent) return a.percent - b.percent
+        if (a.done !== b.done) return a.done - b.done
+        return (a.habit.name || a.habit.title || '').localeCompare(b.habit.name || b.habit.title || '')
+      })
+
+      return completion[0]
     }
   },
 
+  // ACTIONS: persistence + CRUD + streak sync
   actions: {
     _save() {
       localStorage.setItem(storageKey('habits_store'), JSON.stringify({
@@ -200,6 +248,8 @@ export const useHabitsStore = defineStore('habits', {
         createdAt: new Date().toISOString()
       }
       this.habits.push(h)
+      this.ensureTodayBuckets()
+      this.syncTodayCompletion()
       this._save()
       return { ok: true, habit: h }
     },
@@ -220,6 +270,8 @@ export const useHabitsStore = defineStore('habits', {
       }
 
       this.habits[idx] = next
+      this.ensureTodayBuckets()
+      this.syncTodayCompletion()
       this._save()
       return { ok: true }
     },
@@ -232,6 +284,8 @@ export const useHabitsStore = defineStore('habits', {
         delete this.doneByDate[date][id]
       }
       if (this.habits.length !== before) {
+        this.ensureTodayBuckets()
+        this.syncTodayCompletion()
         this._save()
         return { ok: true }
       }
@@ -239,16 +293,20 @@ export const useHabitsStore = defineStore('habits', {
     },
 
     toggleHabitDoneToday(id) {
+      const exists = this.habits.some(h => h.id === id)
+      if (!exists) return { ok: false, error: 'Habit not found' }
+
       this.ensureTodayBuckets()
       const date = this.todayISO
       if (!this.doneByDate[date]) this.doneByDate[date] = {}
 
-      if (this.doneByDate[date][id]) return { ok: true }
-      this.doneByDate[date][id] = true
+      const isDone = !!this.doneByDate[date][id]
+      if (isDone) delete this.doneByDate[date][id]
+      else this.doneByDate[date][id] = true
 
       this.syncTodayCompletion()
       this._save()
-      return { ok: true }
+      return { ok: true, done: !isDone }
     },
 
     ensureTodayBuckets() {
@@ -261,15 +319,16 @@ export const useHabitsStore = defineStore('habits', {
 
     syncTodayCompletion() {
       const date = this.todayISO
-      const fully = this.isDayFullyCompleted
+      const counted = this.isDayCounted
 
-      if (fully && !this.completedDays[date]) {
+      if (counted && !this.completedDays[date]) {
         this.completedDays[date] = true
         this.recalcBestStreak()
       }
 
-      if (!fully && this.completedDays[date]) {
+      if (!counted && this.completedDays[date]) {
         this.completedDays[date] = false
+        this.recalcBestStreak()
       }
     },
 

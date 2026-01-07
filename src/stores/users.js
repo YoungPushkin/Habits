@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia'
 
 export const useUsersStore = defineStore('users', {
+  // STATE: local user list + current session
   state: () => ({
     users: [],
     currentUser: null
   }),
 
+  // ACTIONS: storage + auth flow
   actions: {
     load() {
       const raw = localStorage.getItem('users_db')

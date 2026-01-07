@@ -38,7 +38,10 @@ export default {
 
     toggleHabit(id) {
       const res = this.habitsStore.toggleHabitDoneToday(id)
-      if (res?.ok) this.ui.showToast('Marked as done for today', 'success')
+      if (res?.ok) {
+        const msg = res.done ? 'Marked as done for today' : 'Marked as not done'
+        this.ui.showToast(msg, 'success')
+      }
       else if (res && res.error) this.ui.showToast(res.error, 'error')
     },
 

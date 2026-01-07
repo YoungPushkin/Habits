@@ -1,6 +1,6 @@
 <template>
   <div class="carousel">
-    <div class="carousel-nav">
+    <div v-if="$slots.nav" class="carousel-nav">
       <slot
         name="nav"
         :prev="prev"
@@ -65,3 +65,19 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.carousel{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.carousel-nav{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+}
+.carousel-stage{width:100%}
+.carousel-slide{width:100%}
+</style>

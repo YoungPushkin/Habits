@@ -1,15 +1,18 @@
 <script>
 import AuthBaseMixin from '../../mixins/AuthBase.mixin'
 import { initAllStores } from '../../utils/bootstrap.js'
-import logo from '../../assets/images/logo.png'
+import AuthHero from '../../components/auth/AuthHero.vue'
+import BaseCard from '../../components/global/BaseCard.vue'
+import FormErrorAlert from '../../components/form/FormErrorAlert.vue'
 
 export default {
   name: 'RegisterView',
+  components: { AuthHero, BaseCard, FormErrorAlert },
   mixins: [AuthBaseMixin],
   emits: ['complete', 'back'],
 
   data() {
-    return { name: '', logo }
+    return { name: '' }
   },
 
   methods: {
@@ -44,62 +47,56 @@ export default {
 
 <template>
   <section class="app-page auth-page auth-page--top">
-    <div class="auth-hero">
-      <img :src="logo" alt="Habit Flow logo" class="auth-logo" />
-      <div class="logo-text">Habit Flow</div>
-    </div>
+    <AuthHero />
 
-    <v-card class="card auth-panel wide" variant="tonal">
-      <v-card-text>
+    <BaseCard
+      title="Create account"
+      subtitle="Join and start tracking your progress."
+      card-class="auth-panel wide"
+    >
 
-        <div class="t-h2 mb-1">Create account</div>
-        <p class="t-sub mb-6">Join and start tracking your progress.</p>
+      <v-form @submit.prevent="onSubmit">
+        <v-text-field
+          v-model="name"
+          label="Your name"
+          type="text"
+          variant="outlined"
+          density="comfortable"
+          autocomplete="name"
+          hide-details="auto"
+          class="mb-3"
+        />
+        <v-text-field
+          v-model="email"
+          label="Email"
+          type="email"
+          variant="outlined"
+          density="comfortable"
+          autocomplete="email"
+          hide-details="auto"
+          class="mb-3"
+        />
+        <v-text-field
+          v-model="password"
+          label="Password"
+          type="password"
+          variant="outlined"
+          density="comfortable"
+          autocomplete="new-password"
+          hide-details="auto"
+          class="mb-3"
+        />
 
-        <v-form @submit.prevent="onSubmit">
-          <v-text-field
-            v-model="name"
-            label="Your name"
-            type="text"
-            variant="outlined"
-            density="comfortable"
-            autocomplete="name"
-            hide-details="auto"
-            class="mb-3"
-          />
-          <v-text-field
-            v-model="email"
-            label="Email"
-            type="email"
-            variant="outlined"
-            density="comfortable"
-            autocomplete="email"
-            hide-details="auto"
-            class="mb-3"
-          />
-          <v-text-field
-            v-model="password"
-            label="Password"
-            type="password"
-            variant="outlined"
-            density="comfortable"
-            autocomplete="new-password"
-            hide-details="auto"
-            class="mb-3"
-          />
+        <FormErrorAlert :message="error" />
 
-          <v-alert v-if="error" type="error" variant="tonal" density="comfortable" class="mb-4">
-            {{ error }}
-          </v-alert>
+        <v-btn type="submit" color="primary" variant="flat" rounded="pill" block class="mb-3">
+          Continue
+        </v-btn>
 
-          <v-btn type="submit" color="primary" variant="flat" rounded="pill" block class="mb-3">
-            Continue
-          </v-btn>
-
-          <v-btn variant="tonal" rounded="pill" block @click="$emit('back')">
-            Back to welcome
-          </v-btn>
-        </v-form>
-      </v-card-text>
-    </v-card>
+        <v-btn variant="tonal" rounded="pill" block @click="$emit('back')">
+          Back to welcome
+        </v-btn>
+      </v-form>
+    </BaseCard>
   </section>
 </template>
