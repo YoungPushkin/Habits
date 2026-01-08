@@ -41,9 +41,9 @@
       >
         {{ ui.toastMessage }}
         <template #actions>
-          <v-btn icon size="small" variant="text" @click="ui.hideToast()">
+          <BaseButton kind="icon" icon size="small" variant="text" @click="ui.hideToast()">
             <v-icon icon="mdi-close" />
-          </v-btn>
+          </BaseButton>
         </template>
       </v-snackbar>
     </div>
@@ -55,6 +55,7 @@ import WelcomeView from './views/authentication/WelcomeView.vue'
 import RegisterView from './views/authentication/RegisterView.vue'
 import LoginView from './views/authentication/LoginView.vue'
 import Sidebar from './components/global/Sidebar.vue'
+import BaseButton from './components/global/BaseButton.vue'
 
 import { useUiStore } from './stores/settings'
 import { useUsersStore } from './stores/users'
@@ -66,7 +67,7 @@ import DayWatcherMixin from './mixins/DayWatcher.mixin'
 export default {
   name: 'App',
   mixins: [DayWatcherMixin],
-  components: { WelcomeView, RegisterView, LoginView, Sidebar },
+  components: { WelcomeView, RegisterView, LoginView, Sidebar, BaseButton },
   data() {
     return {
       ui: useUiStore(),

@@ -17,27 +17,26 @@
       </v-chip>
 
       <div class="task-actions">
-        <v-btn
-          variant="tonal"
+        <BaseButton
+          kind="action"
           rounded="lg"
-          class="btn-action act-ok"
+          class="act-ok"
           @click="$emit('complete', task.id)"
         >
           <i class="bi bi-check2" style="margin-right:8px"></i>
-          Complete
-        </v-btn>
+          {{ buttonLabels.complete }}
+        </BaseButton>
 
         <v-menu location="bottom end">
           <template #activator="{ props }">
-            <v-btn
+            <BaseButton
               v-bind="props"
+              kind="icon"
               icon
-              variant="tonal"
               size="small"
-              class="btn-icon"
             >
               <i class="bi bi-three-dots-vertical"></i>
-            </v-btn>
+            </BaseButton>
           </template>
 
           <v-list density="comfortable" class="menu">
@@ -62,23 +61,28 @@
 </template>
 
 <script>
+import BaseButton from './global/BaseButton.vue'
+import { BUTTON_LABELS } from '../constants/buttons.js'
+import { parseISODate, formatISODate } from '../utils/date.js'
+
 export default {
   name: 'TaskCard',
+  components: { BaseButton },
   props: {
     task: { type: Object, required: true }
   },
   emits: ['complete', 'edit', 'delete'],
   computed: {
+    buttonLabels() { return BUTTON_LABELS },
     deadlineText() {
       if (!this.task.deadlineDate) return 'No deadline'
-      const d = new Date(this.task.deadlineDate + 'T00:00:00')
-      if (isNaN(d.getTime())) return 'No deadline'
-      return d.toLocaleDateString()
+      const text = formatISODate(this.task.deadlineDate)
+      return text || 'No deadline'
     },
     deadlineDiff() {
       if (!this.task.deadlineDate) return null
-      const due = new Date(this.task.deadlineDate + 'T00:00:00')
-      if (isNaN(due.getTime())) return null
+      const due = parseISODate(this.task.deadlineDate)
+      if (!due) return null
       const now = new Date()
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
       return Math.round((due - today) / (1000 * 60 * 60 * 24))

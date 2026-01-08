@@ -73,12 +73,12 @@
     </div>
 
     <template #actions>
-      <v-btn variant="tonal" rounded="pill" @click="$emit('close')">
-        Cancel
-      </v-btn>
-      <v-btn class="btn-primary" variant="flat" @click="save">
-        {{ mode === 'create' ? 'Save habit' : 'Save changes' }}
-      </v-btn>
+      <BaseButton kind="action" @click="$emit('close')">
+        {{ buttonLabels.cancel }}
+      </BaseButton>
+      <BaseButton kind="primary" @click="save">
+        {{ mode === 'create' ? buttonLabels.saveHabit : buttonLabels.saveChanges }}
+      </BaseButton>
     </template>
   </BaseModal>
 </template>
@@ -88,10 +88,13 @@ import { validateHabitPayload } from '../utils/validators.js'
 import BaseModal from './global/BaseModal.vue'
 import { HABIT_CATEGORIES } from '../constants/habitCategories.js'
 import FormErrorAlert from './form/FormErrorAlert.vue'
+import BaseButton from './global/BaseButton.vue'
+import { BUTTON_LABELS } from '../constants/buttons.js'
+import { WEEKDAYS_MON } from '../constants/weekdays.js'
 
 export default {
   name: 'HabitModal',
-  components: { BaseModal, FormErrorAlert },
+  components: { BaseModal, FormErrorAlert, BaseButton },
   props: {
     mode: { type: String, default: 'create' },
     habit: { type: Object, default: null }
@@ -100,7 +103,7 @@ export default {
   data() {
     return {
       error: '',
-      weekLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      weekLabels: WEEKDAYS_MON,
       categories: HABIT_CATEGORIES,
       repeatMode: 'daily',
       daysError: false,
@@ -108,7 +111,8 @@ export default {
         name: '',
         category: 'other',
         daysIdx: [] 
-      }
+      },
+      buttonLabels: BUTTON_LABELS
     }
   },
   watch: {

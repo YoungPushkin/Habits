@@ -4,13 +4,16 @@ import HabitCard from '../components/HabitCard.vue'
 import HabitModal from '../components/HabitModal.vue'
 import BaseCard from '../components/global/BaseCard.vue'
 import PageHeader from '../components/global/PageHeader.vue'
+import BaseButton from '../components/global/BaseButton.vue'
+import { BUTTON_LABELS } from '../constants/buttons.js'
 
 export default {
   name: 'HabitsView',
   mixins: [HabitModalMixin],
-  components: { HabitCard, HabitModal, BaseCard, PageHeader },
+  components: { HabitCard, HabitModal, BaseCard, PageHeader, BaseButton },
   computed: {
-    habitsUI() { return this.habitsStore.habitsUI }
+    habitsUI() { return this.habitsStore.habitsUI },
+    buttonLabels() { return BUTTON_LABELS }
   }
 }
 </script>
@@ -20,10 +23,10 @@ export default {
     <PageHeader title="Habits" subtitle="Create, edit and manage your habits.">
       <template #meta>
         <div class="page-actions">
-          <v-btn class="btn-primary" color="primary" variant="flat" rounded="pill" @click="openHabitCreate">
+          <BaseButton kind="primary" color="primary" @click="openHabitCreate">
             <i class="bi bi-plus-lg" style="margin-right:8px;"></i>
-            Add habit
-          </v-btn>
+            {{ buttonLabels.addHabit }}
+          </BaseButton>
         </div>
       </template>
     </PageHeader>

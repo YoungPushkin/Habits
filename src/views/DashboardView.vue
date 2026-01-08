@@ -10,18 +10,22 @@ import TaskCard from '../components/TaskCard.vue'
 import HfCarousel from '../components/global/HfCarousel.vue'
 import BaseCard from '../components/global/BaseCard.vue'
 import PageHeader from '../components/global/PageHeader.vue'
+import BaseButton from '../components/global/BaseButton.vue'
+import CarouselControls from '../components/global/CarouselControls.vue'
+import { BUTTON_LABELS } from '../constants/buttons.js'
 
 export default {
   name: 'DashboardView',
   mixins: [CarouselMixin, HabitModalMixin, TaskModalMixin],
-  components: { HabitModal, TaskModal, HabitCard, TaskCard, HfCarousel, BaseCard, PageHeader },
+  components: { HabitModal, TaskModal, HabitCard, TaskCard, HfCarousel, BaseCard, PageHeader, BaseButton, CarouselControls },
 
   computed: {
     todayHabitsForUI() { return this.habitsStore.todayHabitsForUI },
     importantTasks() { return this.tasksStore.importantTasks },
     todayLabel() {
       return new Date().toLocaleDateString('en-US', { weekday: 'long' })
-    }
+    },
+    buttonLabels() { return BUTTON_LABELS }
   }
 }
 </script>
@@ -104,33 +108,15 @@ export default {
     <div class="middle-row">
       <BaseCard title="Habits for today" subtitle="Keep your promises to yourself.">
         <template #meta>
-          <div class="carousel-controls">
-            <v-btn
-              icon
-              size="small"
-              variant="tonal"
-              class="btn-icon act-gold"
-              :disabled="todayHabitsForUI.length <= 1 || habitsIndex <= 0"
-              @click="habitsCarouselPrev"
-            >
-              <i class="bi bi-chevron-left"></i>
-            </v-btn>
-
-            <v-chip v-if="todayHabitsForUI.length" size="small" variant="tonal" color="primary">
-              {{ habitsStore.currentHabitNumber(habitsIndex) }} / {{ todayHabitsForUI.length }}
-            </v-chip>
-
-            <v-btn
-              icon
-              size="small"
-              variant="tonal"
-              class="btn-icon act-gold"
-              :disabled="todayHabitsForUI.length <= 1 || habitsIndex >= todayHabitsForUI.length - 1"
-              @click="habitsCarouselNext"
-            >
-              <i class="bi bi-chevron-right"></i>
-            </v-btn>
-          </div>
+          <CarouselControls
+            :index="habitsStore.currentHabitNumber(habitsIndex)"
+            :total="todayHabitsForUI.length"
+            :at-start="todayHabitsForUI.length <= 1 || habitsIndex <= 0"
+            :at-end="todayHabitsForUI.length <= 1 || habitsIndex >= todayHabitsForUI.length - 1"
+            :show-counter="!!todayHabitsForUI.length"
+            @prev="habitsCarouselPrev"
+            @next="habitsCarouselNext"
+          />
         </template>
 
         <div v-if="todayHabitsForUI.length === 0" class="t-body">
@@ -155,48 +141,30 @@ export default {
 
       <BaseCard title="Quick actions" subtitle="Create new tasks and habits.">
         <div class="quick-actions">
-          <v-btn variant="tonal" rounded="pill" color="primary" @click="openTaskCreate">
+          <BaseButton kind="primary" color="primary" @click="openTaskCreate">
             <i class="bi bi-plus-lg" style="margin-right:8px;"></i>
-            Add task
-          </v-btn>
+            {{ buttonLabels.addTask }}
+          </BaseButton>
 
-          <v-btn class="btn-primary" color="primary" variant="flat" rounded="pill" @click="openHabitCreate">
+          <BaseButton kind="primary" color="primary" @click="openHabitCreate">
             <i class="bi bi-plus-lg" style="margin-right:8px;"></i>
-            Add habit
-          </v-btn>
+            {{ buttonLabels.addHabit }}
+          </BaseButton>
         </div>
       </BaseCard>
     </div>
 
     <BaseCard title="Important timeline" subtitle="High priority and near deadlines.">
         <template #meta>
-          <div class="carousel-controls">
-            <v-btn
-              icon
-              size="small"
-              variant="tonal"
-              class="btn-icon act-gold"
-              :disabled="importantTasks.length <= 1 || tasksIndex <= 0"
-              @click="tasksCarouselPrev"
-            >
-              <i class="bi bi-chevron-left"></i>
-            </v-btn>
-
-            <v-chip v-if="importantTasks.length" size="small" variant="tonal" color="primary">
-              {{ tasksStore.currentTaskNumber(tasksIndex) }} / {{ importantTasks.length }}
-            </v-chip>
-
-            <v-btn
-              icon
-              size="small"
-              variant="tonal"
-              class="btn-icon act-gold"
-              :disabled="importantTasks.length <= 1 || tasksIndex >= importantTasks.length - 1"
-              @click="tasksCarouselNext"
-            >
-              <i class="bi bi-chevron-right"></i>
-            </v-btn>
-          </div>
+          <CarouselControls
+            :index="tasksStore.currentTaskNumber(tasksIndex)"
+            :total="importantTasks.length"
+            :at-start="importantTasks.length <= 1 || tasksIndex <= 0"
+            :at-end="importantTasks.length <= 1 || tasksIndex >= importantTasks.length - 1"
+            :show-counter="!!importantTasks.length"
+            @prev="tasksCarouselPrev"
+            @next="tasksCarouselNext"
+          />
         </template>
 
         <v-alert

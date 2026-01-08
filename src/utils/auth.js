@@ -18,3 +18,19 @@ export function validateAuthFields(rawEmail, rawPassword) {
 
   return { ok: true, email, password, message: '' }
 }
+
+export function deriveUserName(user) {
+  const name = String(user?.name || '').trim()
+  if (name) return name
+  const email = String(user?.email || '').trim()
+  if (!email) return 'User'
+  return email.includes('@') ? email.split('@')[0] : email
+}
+
+export function deriveInitials(nameOrUser) {
+  const name = typeof nameOrUser === 'string'
+    ? nameOrUser
+    : deriveUserName(nameOrUser)
+  const n = String(name || 'U').trim()
+  return n.slice(0, 2).toUpperCase()
+}

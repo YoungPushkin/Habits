@@ -1,6 +1,7 @@
 import { useUsersStore } from '../stores/users'
 import { useUiStore } from '../stores/settings'
 import { resetAllStores } from '../utils/bootstrap.js'
+import { deriveUserName, deriveInitials } from '../utils/auth.js'
 
 export default {
   data() {
@@ -26,13 +27,11 @@ export default {
     },
 
     userName() {
-      
-      return this.currentUser?.name || (this.userEmail.includes('@') ? this.userEmail.split('@')[0] : 'User')
+      return deriveUserName(this.currentUser)
     },
 
     initials() {
-      const n = String(this.userName || 'U').trim()
-      return n.slice(0, 2).toUpperCase()
+      return deriveInitials(this.userName)
     }
   },
 

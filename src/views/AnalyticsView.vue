@@ -8,10 +8,12 @@ import BarChartCard from '../components/analytics/BarChartCard.vue'
 import HabitCard from '../components/HabitCard.vue'
 import BaseCard from '../components/global/BaseCard.vue'
 import PageHeader from '../components/global/PageHeader.vue'
+import BaseButton from '../components/global/BaseButton.vue'
+import CarouselControls from '../components/global/CarouselControls.vue'
 
 export default {
   name: 'AnalyticsView',
-  components: { HfCarousel, DonutChart, BarChartCard, HabitCard, BaseCard, PageHeader},
+  components: { HfCarousel, DonutChart, BarChartCard, HabitCard, BaseCard, PageHeader, BaseButton, CarouselControls },
   data() {
     return {
       habitsStore: useHabitsStore(),
@@ -151,31 +153,15 @@ export default {
 
     <HfCarousel class="analytics-carousel" :items="analyticsSlides">
       <template #nav="{ prev, next, atStart, atEnd, index, total }">
-        <div class="carousel-controls-center">
-          <v-btn
-            icon
-            size="small"
-            class="btn-icon act-gold"
-            variant="tonal"
-            :disabled="atStart"
-            @click="prev"
-          >
-            <i class="bi bi-chevron-left"></i>
-          </v-btn>
-          <v-chip size="small" variant="tonal" color="primary">
-            {{ index + 1 }} / {{ total }}
-          </v-chip>
-          <v-btn
-            icon
-            size="small"
-            class="btn-icon act-gold"
-            variant="tonal"
-            :disabled="atEnd"
-            @click="next"
-          >
-            <i class="bi bi-chevron-right"></i>
-          </v-btn>
-        </div>
+        <CarouselControls
+          align="center"
+          :index="index + 1"
+          :total="total"
+          :at-start="atStart"
+          :at-end="atEnd"
+          @prev="prev"
+          @next="next"
+        />
       </template>
 
       <template #default="{ item }">

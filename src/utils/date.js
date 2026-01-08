@@ -31,3 +31,15 @@ export function startOfWeekMonday(d = new Date()) {
   const monOffset = (js + 6) % 7
   return addDays(day, -monOffset)
 }
+
+export function parseISODate(iso) {
+  if (!iso) return null
+  const d = new Date(String(iso) + 'T00:00:00')
+  if (Number.isNaN(d.getTime())) return null
+  return d
+}
+
+export function formatISODate(iso, locale) {
+  const d = parseISODate(iso)
+  return d ? d.toLocaleDateString(locale) : ''
+}

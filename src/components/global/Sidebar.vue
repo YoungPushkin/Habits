@@ -11,9 +11,9 @@
         <span :class="['brand text-gold', { 'brand-hidden': collapsed }]">Habit Flow</span>
       </div>
 
-      <v-btn variant="text" icon class="toggle-btn" @click="$emit('toggle')">
+      <BaseButton kind="icon" icon variant="text" class="toggle-btn" @click="$emit('toggle')">
         <i :class="collapsed ? 'bi bi-chevron-right' : 'bi bi-chevron-left'"></i>
-      </v-btn>
+      </BaseButton>
     </div>
 
     <v-divider />
@@ -50,17 +50,17 @@
           </div>
         </div>
 
-        <v-btn
+        <BaseButton
           v-if="!collapsed"
+          kind="icon"
           icon
-          variant="tonal"
           color="primary"
           class="logout-btn"
           @click="$emit('logout')"
           title="Log out"
         >
           <i class="bi bi-box-arrow-right"></i>
-        </v-btn>
+        </BaseButton>
       </div>
     </template>
   </v-navigation-drawer>
@@ -69,9 +69,12 @@
 <script>
 import { useUsersStore } from '../../stores/users'
 import { useUiStore } from '../../stores/settings'
+import BaseButton from './BaseButton.vue'
+import { deriveUserName, deriveInitials } from '../../utils/auth.js'
 
 export default {
   name: 'Sidebar',
+  components: { BaseButton },
 
   props: {
     collapsed: { type: Boolean, required: true }
@@ -100,14 +103,13 @@ export default {
 
   computed: {
     userName() {
-      return this.usersStore.currentUser?.name || 'User'
+      return deriveUserName(this.usersStore.currentUser)
     },
     avatarUrl() {
       return this.ui.avatarDataUrl || ''
     },
     initials() {
-      const n = String(this.userName || 'U').trim()
-      return n.slice(0, 2).toUpperCase()
+      return deriveInitials(this.userName)
     }
   }
 }

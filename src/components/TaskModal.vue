@@ -47,12 +47,12 @@
     </div>
 
     <template #actions>
-      <v-btn variant="tonal" rounded="pill" @click="$emit('close')">
-        Cancel
-      </v-btn>
-      <v-btn color="primary" variant="flat" rounded="pill" @click="save">
-        Save
-      </v-btn>
+      <BaseButton kind="action" @click="$emit('close')">
+        {{ buttonLabels.cancel }}
+      </BaseButton>
+      <BaseButton kind="primary" color="primary" @click="save">
+        {{ buttonLabels.save }}
+      </BaseButton>
     </template>
   </BaseModal>
 </template>
@@ -61,10 +61,13 @@
 import CalendarPicker from './global/CalendarPicker.vue'
 import { validateTaskPayload } from '../utils/validators.js'
 import BaseModal from './global/BaseModal.vue'
+import BaseButton from './global/BaseButton.vue'
+import { BUTTON_LABELS } from '../constants/buttons.js'
+import { formatISODate } from '../utils/date.js'
 
 export default {
   name: 'TaskModal',
-  components: { CalendarPicker, BaseModal },
+  components: { CalendarPicker, BaseModal, BaseButton },
   props: {
     mode: { type: String, default: 'create' },
     task: { type: Object, default: null }
@@ -101,10 +104,10 @@ export default {
   computed: {
     deadlineText() {
       if (!this.form.deadlineDate) return 'No deadline'
-      const d = new Date(this.form.deadlineDate + 'T00:00:00')
-      if (isNaN(d.getTime())) return 'No deadline'
-      return d.toLocaleDateString()
-    }
+      const text = formatISODate(this.form.deadlineDate)
+      return text || 'No deadline'
+    },
+    buttonLabels() { return BUTTON_LABELS }
   },
   methods: {
     setError(msg) {

@@ -115,6 +115,7 @@ body{
 
 /* GLOBAL: buttons */
 .btn-primary{
+  /* Add habit/Add task/Save */
   height:40px;
   padding:0 18px;
   border-radius:var(--pill);
@@ -127,6 +128,7 @@ body{
 }
 
 .btn-action{
+  /* Cancel/Upload/Reset all */
   height:32px;
   padding:0 12px;
   border-radius:var(--r-md);
@@ -135,6 +137,7 @@ body{
 }
 
 .btn-icon{
+  /* carousel arrows/menus/close */
   width:32px;
   height:32px;
   border-radius:var(--pill);
@@ -182,14 +185,6 @@ body{
 .modal-pad-body{padding:14px 18px 18px}
 .modal-pad-actions{padding:16px 18px 18px;gap:10px}
 /* GLOBAL: layout helpers */
-.carousel-controls-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 12px
-}
-
 .hero-actions {
   display: flex;
   gap: 12px;
@@ -215,6 +210,10 @@ body{
   align-items: center;
   gap: 8px
 }
+
+.carousel-controls--start{justify-content:flex-start}
+.carousel-controls--center{justify-content:center}
+.carousel-controls--end{justify-content:flex-end}
 
 .card-scroll {
   max-height: 65vh;

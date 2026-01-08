@@ -41,6 +41,8 @@
 </template>
 
 <script>
+import { WEEKDAYS_MON } from '../../constants/weekdays.js'
+
 export default {
   name: 'CalendarPicker',
   props: {
@@ -59,7 +61,7 @@ export default {
   },
   computed: {
     weekdays() {
-      return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      return WEEKDAYS_MON
     },
     monthLabel() {
       return [

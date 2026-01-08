@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { startOfDay, startOfWeekMonday, addDays, monthKey, isoFromDate } from '../utils/date.js'
+import { WEEKDAYS_MON, WEEKDAYS_SUN } from '../constants/weekdays.js'
 import { storageKey } from '../utils/storageKey.js'
 import { percent } from '../utils/math.js'
 
@@ -130,7 +131,7 @@ export const useTasksStore = defineStore('tasks', {
     },
 
     weeklyCompleted(state) {
-      const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      const labels = WEEKDAYS_MON
       const monday = startOfWeekMonday(new Date())
       const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i))
       const isoDays = days.map(d => isoFromDate(d))
@@ -152,7 +153,7 @@ export const useTasksStore = defineStore('tasks', {
       const done = (state.tasks || []).filter(t => t.status === 'done' && t.completedAt)
       if (!done.length) return 'N/A'
 
-      const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+      const labels = WEEKDAYS_SUN
       const map = Object.create(null)
 
       for (const t of done) {

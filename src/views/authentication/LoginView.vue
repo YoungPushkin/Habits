@@ -4,12 +4,17 @@ import { initAllStores } from '../../utils/bootstrap.js'
 import AuthHero from '../../components/auth/AuthHero.vue'
 import BaseCard from '../../components/global/BaseCard.vue'
 import FormErrorAlert from '../../components/form/FormErrorAlert.vue'
+import BaseButton from '../../components/global/BaseButton.vue'
+import { BUTTON_LABELS } from '../../constants/buttons.js'
 
 export default {
   name: 'LoginView',
-  components: { AuthHero, BaseCard, FormErrorAlert },
+  components: { AuthHero, BaseCard, FormErrorAlert, BaseButton },
   mixins: [AuthBaseMixin],
   emits: ['back', 'loginSuccess'],
+  data() {
+    return { buttonLabels: BUTTON_LABELS }
+  },
 
   methods: {
     onSubmit() {
@@ -75,13 +80,13 @@ export default {
 
         <FormErrorAlert :message="error" />
 
-        <v-btn type="submit" color="primary" variant="flat" rounded="pill" block class="mb-3">
-          Continue
-        </v-btn>
+        <BaseButton type="submit" color="primary" variant="flat" rounded="pill" block class="mb-3">
+          {{ buttonLabels.continue }}
+        </BaseButton>
 
-        <v-btn variant="tonal" rounded="pill" block @click="$emit('back')">
-          Back to welcome
-        </v-btn>
+        <BaseButton variant="tonal" rounded="pill" block @click="$emit('back')">
+          {{ buttonLabels.backToWelcome }}
+        </BaseButton>
       </v-form>
     </BaseCard>
   </section>

@@ -60,9 +60,9 @@
 
           <v-menu v-if="showMenu" location="bottom end">
             <template #activator="{ props }">
-              <v-btn v-bind="props" icon variant="tonal" size="small" class="btn-icon">
+              <BaseButton v-bind="props" kind="icon" icon size="small">
                 <i class="bi bi-three-dots-vertical"></i>
-              </v-btn>
+              </BaseButton>
             </template>
 
             <v-list density="comfortable" class="menu">
@@ -100,9 +100,12 @@
 
 <script>
 import { HABIT_CATEGORY_MAP } from '../constants/habitCategories.js'
+import BaseButton from './global/BaseButton.vue'
+import { WEEKDAYS_MON } from '../constants/weekdays.js'
 
 export default {
   name: 'HabitCard',
+  components: { BaseButton },
   props: {
     habit: { type: Object, required: true },
     doneToday: { type: Boolean, default: false },
@@ -113,7 +116,7 @@ export default {
   emits: ['toggle', 'edit', 'delete'],
   data() {
     return {
-      weekLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      weekLabels: WEEKDAYS_MON
     }
   },
   computed: {

@@ -1,9 +1,14 @@
 <script>
 import AuthHero from '../../components/auth/AuthHero.vue'
+import BaseButton from '../../components/global/BaseButton.vue'
+import { BUTTON_LABELS } from '../../constants/buttons.js'
 
 export default {
   name: 'WelcomeView',
-  components: { AuthHero },
+  components: { AuthHero, BaseButton },
+  computed: {
+    buttonLabels() { return BUTTON_LABELS }
+  },
   emits: ['start', 'login']
 }
 </script>
@@ -27,13 +32,13 @@ export default {
             </p>
 
             <div class="hero-actions">
-              <v-btn color="primary" variant="flat" rounded="pill" @click="$emit('start')">
-                Create account
-              </v-btn>
+              <BaseButton color="primary" variant="flat" rounded="pill" @click="$emit('start')">
+                {{ buttonLabels.createAccount }}
+              </BaseButton>
 
-              <v-btn color="primary" variant="tonal" rounded="pill" @click="$emit('login')">
-                Log in
-              </v-btn>
+              <BaseButton color="primary" variant="tonal" rounded="pill" @click="$emit('login')">
+                {{ buttonLabels.logIn }}
+              </BaseButton>
             </div>
           </v-col>
 

@@ -4,13 +4,18 @@ import BaseCard from '../components/global/BaseCard.vue';
 import BaseModal from '../components/global/BaseModal.vue';
 import PageHeader from '../components/global/PageHeader.vue';
 import FormErrorAlert from '../components/form/FormErrorAlert.vue';
+import BaseButton from '../components/global/BaseButton.vue';
+import { BUTTON_LABELS } from '../constants/buttons.js';
 
 
 
 export default {
   name: 'SettingsView',
   mixins: [settingsMixin],
-  components: { BaseCard, BaseModal, PageHeader, FormErrorAlert }
+  components: { BaseCard, BaseModal, PageHeader, FormErrorAlert, BaseButton },
+  computed: {
+    buttonLabels() { return BUTTON_LABELS }
+  }
 }
 </script>
 
@@ -32,27 +37,25 @@ export default {
           </div>
         </div>
 
-        <v-btn class="btn-primary" variant="flat" rounded="pill" @click="openChangePassword">
-          Change password
-        </v-btn>
+        <BaseButton kind="primary" @click="openChangePassword">
+          {{ buttonLabels.changePassword }}
+        </BaseButton>
       </BaseCard>
 
       <BaseCard title="Avatar" card-class="h-100">
         <template #meta>
           <div class="d-flex ga-2">
-            <v-btn class="btn-action" variant="tonal" rounded="pill" @click="pickAvatar">
-              Upload
-            </v-btn>
-            <v-btn
-              class="btn-action"
+            <BaseButton kind="action" @click="pickAvatar">
+              {{ buttonLabels.upload }}
+            </BaseButton>
+            <BaseButton
+              kind="action"
               color="error"
-              variant="tonal"
-              rounded="pill"
               :disabled="!ui.avatarDataUrl"
               @click="ui.clearAvatar()"
             >
-              Remove
-            </v-btn>
+              {{ buttonLabels.remove }}
+            </BaseButton>
           </div>
         </template>
 
@@ -98,9 +101,9 @@ export default {
       <BaseCard title="Danger zone" card-class="h-100">
         <div class="t-cap mb-4">This action is irreversible</div>
 
-        <v-btn class="btn-action" color="error" variant="tonal" rounded="pill" @click="confirmReset">
-          Reset all data
-        </v-btn>
+        <BaseButton kind="action" color="error" @click="confirmReset">
+          {{ buttonLabels.resetAll }}
+        </BaseButton>
       </BaseCard>
     </div>
 
@@ -133,12 +136,12 @@ export default {
       <FormErrorAlert :message="passwordError" />
 
       <template #actions>
-        <v-btn class="btn-action" variant="tonal" rounded="pill" @click="showPasswordModal = false">
-          Cancel
-        </v-btn>
-        <v-btn class="btn-primary" variant="flat" rounded="pill" @click="submitPasswordChange">
-          Save
-        </v-btn>
+        <BaseButton kind="action" @click="showPasswordModal = false">
+          {{ buttonLabels.cancel }}
+        </BaseButton>
+        <BaseButton kind="primary" @click="submitPasswordChange">
+          {{ buttonLabels.save }}
+        </BaseButton>
       </template>
     </BaseModal>
 
@@ -152,12 +155,12 @@ export default {
       <div class="t-cap">This cannot be undone.</div>
 
       <template #actions>
-        <v-btn class="btn-action" variant="tonal" rounded="pill" @click="showResetDialog = false">
-          Cancel
-        </v-btn>
-        <v-btn class="btn-action" color="error" variant="flat" rounded="pill" @click="resetAll">
-          Reset
-        </v-btn>
+        <BaseButton kind="action" @click="showResetDialog = false">
+          {{ buttonLabels.cancel }}
+        </BaseButton>
+        <BaseButton kind="action" color="error" variant="flat" @click="resetAll">
+          {{ buttonLabels.reset }}
+        </BaseButton>
       </template>
     </BaseModal>
   </section>

@@ -173,22 +173,33 @@ export const useHabitsStore = defineStore('habits', {
       if (!habits.length) return null
 
       const doneByDate = state.doneByDate || {}
+      const today = isoToday()
       const completion = habits.map(habit => {
         let due = 0
         let done = 0
 
-        Object.keys(doneByDate).forEach(date => {
-          const parts = String(date).split('-').map(Number)
-          if (parts.length !== 3 || parts.some(n => Number.isNaN(n))) return
-          const day = new Date(parts[0], parts[1] - 1, parts[2])
-          const idx = weekIndex(day)
+        const created = String(habit.createdAt || '').slice(0, 10)
+        const start = created && created.length === 10 ? created : today
 
+        const startParts = start.split('-').map(Number)
+        const endParts = today.split('-').map(Number)
+        if (startParts.length !== 3 || endParts.length !== 3) {
+          return { habit, percent: 0, due: 0, done: 0 }
+        }
+
+        let cursor = new Date(startParts[0], startParts[1] - 1, startParts[2])
+        const endDate = new Date(endParts[0], endParts[1] - 1, endParts[2])
+
+        while (cursor <= endDate) {
+          const idx = weekIndex(cursor)
           const isDue = habit.isDaily ? true : (Array.isArray(habit.days) ? !!habit.days[idx] : false)
-          if (!isDue) return
-
-          due++
-          if (doneByDate[date] && doneByDate[date][habit.id]) done++
-        })
+          if (isDue) {
+            due++
+            const iso = isoFromDate(cursor)
+            if (doneByDate[iso] && doneByDate[iso][habit.id]) done++
+          }
+          cursor = addDays(cursor, 1)
+        }
 
         const percent = due === 0 ? 0 : Math.round((done / due) * 100)
         return { habit, percent, due, done }

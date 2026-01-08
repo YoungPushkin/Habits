@@ -3,9 +3,9 @@
     <v-card class="modal" rounded="xl">
       <v-card-title class="modal-pad-title d-flex align-center justify-space-between">
         <div class="t-h2">{{ title }}</div>
-        <v-btn :class="closeClass" icon size="small" variant="tonal" @click="$emit('close')">
+        <BaseButton :class="closeClass" kind="icon" icon size="small" @click="$emit('close')">
           <v-icon icon="mdi-close" />
-        </v-btn>
+        </BaseButton>
       </v-card-title>
 
       <v-divider />
@@ -24,8 +24,11 @@
 </template>
 
 <script>
+import BaseButton from './BaseButton.vue'
+
 export default {
   name: 'BaseModal',
+  components: { BaseButton },
   props: {
     title: { type: String, required: true },
     maxWidth: { type: [Number, String], default: 680 },

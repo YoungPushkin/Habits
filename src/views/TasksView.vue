@@ -5,11 +5,14 @@ import TaskModal from '../components/TaskModal.vue'
 import HfCarousel from '../components/global/HfCarousel.vue'
 import BaseCard from '../components/global/BaseCard.vue'
 import PageHeader from '../components/global/PageHeader.vue'
+import BaseButton from '../components/global/BaseButton.vue'
+import CarouselControls from '../components/global/CarouselControls.vue'
+import { BUTTON_LABELS } from '../constants/buttons.js'
 
 export default {
   name: 'TasksView',
   mixins: [TaskModalMixin],
-  components: { TaskCard, TaskModal, HfCarousel, BaseCard, PageHeader },
+  components: { TaskCard, TaskModal, HfCarousel, BaseCard, PageHeader, BaseButton, CarouselControls },
   data() {
     return { priorityIndex: 0 }
   },
@@ -26,7 +29,8 @@ export default {
       ].filter(s => Array.isArray(s.tasks) && s.tasks.length)
     },
     priorityTotal() { return this.prioritySlides.length },
-    currentSlide() { return this.prioritySlides[this.priorityIndex] || null }
+    currentSlide() { return this.prioritySlides[this.priorityIndex] || null },
+    buttonLabels() { return BUTTON_LABELS }
   },
   watch: {
     prioritySlides(list) {
@@ -57,10 +61,10 @@ export default {
   <section class="app-page">
     <PageHeader title="Tasks" subtitle="Plan and complete your key actions.">
       <template #meta>
-        <v-btn variant="tonal" rounded="pill" color="primary" @click="openTaskCreate">
+        <BaseButton kind="primary" color="primary" @click="openTaskCreate">
           <i class="bi bi-plus-lg" style="margin-right:8px;"></i>
-          Add task
-        </v-btn>
+          {{ buttonLabels.addTask }}
+        </BaseButton>
       </template>
     </PageHeader>
 
@@ -76,38 +80,26 @@ export default {
 
     <BaseCard v-else title="Tasks by priority" body-class="card-scroll">
       <template #meta>
-        <div class="carousel-controls">
-          <v-btn
-            icon
-            size="small"
-            variant="tonal"
-            class="btn-icon act-gold"
-            :disabled="priorityIndex <= 0"
-            @click="priorityPrev"
-          >
-            <i class="bi bi-chevron-left"></i>
-          </v-btn>
-
-          <v-chip
-            v-if="currentSlide"
-            size="small"
-            variant="tonal"
-            :color="currentSlide.color || 'primary'"
-          >
-            {{ currentSlide.label }} & {{ currentSlide.tasks.length }} tasks
-          </v-chip>
-
-          <v-btn
-            icon
-            size="small"
-            variant="tonal"
-            class="btn-icon act-gold"
-            :disabled="priorityIndex >= priorityTotal - 1"
-            @click="priorityNext"
-          >
-            <i class="bi bi-chevron-right"></i>
-          </v-btn>
-        </div>
+        <CarouselControls
+          :index="priorityIndex + 1"
+          :total="priorityTotal"
+          :at-start="priorityIndex <= 0"
+          :at-end="priorityIndex >= priorityTotal - 1"
+          :show-counter="false"
+          @prev="priorityPrev"
+          @next="priorityNext"
+        >
+          <template #center>
+            <v-chip
+              v-if="currentSlide"
+              size="small"
+              variant="tonal"
+              :color="currentSlide.color || 'primary'"
+            >
+              {{ currentSlide.label }} & {{ currentSlide.tasks.length }} tasks
+            </v-chip>
+          </template>
+        </CarouselControls>
       </template>
 
       <div v-if="!prioritySlides.length" class="t-body">
