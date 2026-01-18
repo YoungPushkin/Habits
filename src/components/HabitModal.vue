@@ -9,19 +9,17 @@
     @secondary="$emit('close')"
     @close="$emit('close')"
   >
-    <div>
-      <div class="t-label mb-2">Name</div>
-      <v-text-field
-        v-model="form.name"
-        variant="outlined"
-        density="comfortable"
-        :error="!!error"
-        :error-messages="error ? [error] : []"
-        hide-details="auto"
-        @keydown.enter.prevent="save"
-        @update:modelValue="clearError"
-      />
-    </div>
+    <v-text-field
+      v-model="form.name"
+      label="Name"
+      variant="outlined"
+      density="comfortable"
+      :placeholder="error && !form.name ? error : ''"
+      :error="!!error"
+      hide-details="auto"
+      @keydown.enter.prevent="save"
+      @update:modelValue="clearError"
+    />
 
     <div class="mt-4">
       <div class="t-label mb-2">Category</div>

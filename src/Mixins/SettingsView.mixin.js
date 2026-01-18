@@ -13,7 +13,8 @@ export default {
       showResetDialog: false,
       newPassword: '',
       confirmPassword: '',
-      passwordError: ''
+      newPasswordError: '',
+      confirmPasswordError: ''
     }
   },
 
@@ -69,12 +70,18 @@ export default {
       this.confirmPassword = ''
     },
 
-    setPasswordError(msg) {
-      this.passwordError = msg || 'Error'
+    setPasswordError(msg, field = 'new') {
+      const text = msg || 'Error'
+      if (field === 'confirm') {
+        this.confirmPasswordError = text
+      } else {
+        this.newPasswordError = text
+      }
     },
 
     clearPasswordError() {
-      this.passwordError = ''
+      this.newPasswordError = ''
+      this.confirmPasswordError = ''
     },
 
     submitPasswordChange() {
@@ -82,17 +89,17 @@ export default {
       const p2 = String(this.confirmPassword || '').trim()
 
       if (!p1 || p1.length < 4) {
-        this.setPasswordError('Password is too short')
+        this.setPasswordError('Password is too short', 'new')
         return
       }
       if (p1 !== p2) {
-        this.setPasswordError('Passwords do not match')
+        this.setPasswordError('Passwords do not match', 'confirm')
         return
       }
 
       const res = this.usersStore.changePassword?.(p1)
       if (res && res.ok === false) {
-        this.setPasswordError(res.error || 'Error')
+        this.setPasswordError(res.error || 'Error', 'new')
         return
       }
 

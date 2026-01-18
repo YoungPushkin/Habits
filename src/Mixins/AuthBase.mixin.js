@@ -8,6 +8,8 @@ export default {
     return {
       usersStore: useUsersStore(),
       error: '',
+      emailError: '',
+      passwordError: '',
       email: '',
       password: ''
     }
@@ -29,6 +31,14 @@ export default {
 
     clearError() {
       this.error = ''
+      this.emailError = ''
+      this.passwordError = ''
+    },
+
+    setFieldError(field, msg) {
+      const text = msg || 'Error'
+      if (field === 'email') this.emailError = text
+      if (field === 'password') this.passwordError = text
     },
 
     normalizeEmail,

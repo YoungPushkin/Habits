@@ -3,13 +3,12 @@ import AuthBaseMixin from '../../mixins/AuthBase.mixin'
 import { initAllStores } from '../../utils/bootstrap.js'
 import AuthHero from '../../components/auth/AuthHero.vue'
 import BaseCard from '../../components/global/BaseCard.vue'
-import FormErrorAlert from '../../components/form/FormErrorAlert.vue'
 import BaseButton from '../../components/global/BaseButton.vue'
 import { BUTTON_LABELS } from '../../constants/buttons.js'
 
 export default {
   name: 'LoginView',
-  components: { AuthHero, BaseCard, FormErrorAlert, BaseButton },
+  components: { AuthHero, BaseCard, BaseButton },
   mixins: [AuthBaseMixin],
   emits: ['back', 'loginSuccess'],
   data() {
@@ -18,15 +17,22 @@ export default {
 
   methods: {
     onSubmit() {
+      this.clearError()
       const check = this.validateAuthFields()
       if (!check.ok) {
-        this.setError(check.message)
+        if (check.message) {
+          if (check.message.toLowerCase().includes('email')) {
+            this.setFieldError('email', check.message)
+          } else {
+            this.setFieldError('password', check.message)
+          }
+        }
         return
       }
 
       const res = this.usersStore.login(check.email, check.password)
       if (!res.ok) {
-        this.setError(res.error)
+        this.setFieldError('password', res.error)
         return
       }
 
@@ -63,8 +69,11 @@ export default {
           variant="outlined"
           density="comfortable"
           autocomplete="email"
+          :placeholder="emailError && !email ? emailError : ''"
+          :error="!!emailError"
           hide-details="auto"
           class="mb-3"
+          @update:modelValue="emailError = ''"
         />
 
         <v-text-field
@@ -74,11 +83,12 @@ export default {
           variant="outlined"
           density="comfortable"
           autocomplete="current-password"
+          :placeholder="passwordError && !password ? passwordError : ''"
+          :error="!!passwordError"
           hide-details="auto"
           class="mb-3"
+          @update:modelValue="passwordError = ''"
         />
-
-        <FormErrorAlert :message="error" />
 
         <BaseButton type="submit" color="primary" variant="flat" rounded="pill" block class="mb-3">
           {{ buttonLabels.continue }}

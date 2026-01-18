@@ -1,13 +1,7 @@
 <template>
-  <v-alert
-    v-if="message"
-    type="error"
-    variant="tonal"
-    density="comfortable"
-    :class="['mb-4', 'form-error-alert', alertClass]"
-  >
+  <div v-if="message" :class="['form-error-text', alertClass]">
     {{ message }}
-  </v-alert>
+  </div>
 </template>
 
 <script>
@@ -21,11 +15,10 @@ export default {
 </script>
 
 <style scoped>
-.form-error-alert :deep(.v-alert__content) {
-  font-size: 5px;
-  line-height: 1.35;
-}
-.form-error-alert :deep(.v-alert__wrapper) {
-  padding: 8px 12px;
+.form-error-text{
+  font-size:12px;
+  line-height:1.35;
+  color:rgb(var(--v-theme-error));
+  margin-top:4px;
 }
 </style>

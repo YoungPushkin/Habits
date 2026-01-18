@@ -3,7 +3,6 @@ import settingsMixin from '../mixins/SettingsView.mixin';
 import BaseCard from '../components/global/BaseCard.vue';
 import BaseModal from '../components/global/BaseModal.vue';
 import PageHeader from '../components/global/PageHeader.vue';
-import FormErrorAlert from '../components/form/FormErrorAlert.vue';
 import BaseButton from '../components/global/BaseButton.vue';
 import { BUTTON_LABELS } from '../constants/buttons.js';
 import { ACCENT_OPTIONS } from '../constants/options.js';
@@ -14,7 +13,7 @@ import OptionToggle from '../components/global/OptionToggle.vue';
 export default {
   name: 'SettingsView',
   mixins: [settingsMixin],
-  components: { BaseCard, BaseModal, PageHeader, FormErrorAlert, BaseButton, OptionToggle },
+  components: { BaseCard, BaseModal, PageHeader, BaseButton, OptionToggle },
   computed: {
     buttonLabels() { return BUTTON_LABELS },
     accentOptions() { return ACCENT_OPTIONS }
@@ -126,8 +125,11 @@ export default {
         type="password"
         variant="outlined"
         density="comfortable"
+        :placeholder="newPasswordError && !newPassword ? newPasswordError : ''"
+        :error="!!newPasswordError"
         hide-details="auto"
         class="mb-3"
+        @update:modelValue="clearPasswordError"
       />
 
       <v-text-field
@@ -136,11 +138,12 @@ export default {
         type="password"
         variant="outlined"
         density="comfortable"
+        :placeholder="confirmPasswordError && !confirmPassword ? confirmPasswordError : ''"
+        :error="!!confirmPasswordError"
         hide-details="auto"
         class="mb-3"
+        @update:modelValue="clearPasswordError"
       />
-
-      <FormErrorAlert :message="passwordError" />
 
     </BaseModal>
 

@@ -17,8 +17,8 @@
       label="Title"
       variant="outlined"
       density="comfortable"
+      :placeholder="error && !form.title ? error : ''"
       :error="!!error"
-      :error-messages="error ? [error] : []"
       hide-details="auto"
       @update:modelValue="clearError"
     />
