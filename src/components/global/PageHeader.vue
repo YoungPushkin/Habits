@@ -33,8 +33,4 @@ export default {
 .page-meta{display:flex;gap:10px;flex-wrap:wrap}
 .page-actions{display:flex;justify-content:flex-end;margin:6px 0 16px}
 
-@media (max-width:900px){
-  .page-head{flex-direction:column}
-  .page-actions{justify-content:flex-start}
-}
 </style>

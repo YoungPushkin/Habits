@@ -202,7 +202,4 @@ export default {
   font-weight:700;
 }
 
-@media (max-width:520px){
-  .cal-title{font-size:15px}
-}
 </style>

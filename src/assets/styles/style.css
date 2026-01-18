@@ -1,5 +1,3 @@
-@import "./responsive/tablet.css";
-@import "./responsive/phone.css";
 /* GLOBAL: tokens, radii, typography */
 
 :root{
@@ -102,9 +100,6 @@ body{
   min-height: 100vh;
 }
 
-@media (max-width:900px){
-  .app-page{padding:18px 16px}
-}
 
 /* GLOBAL: typography */
 .Header-h1, .Header-sub, .brand{
@@ -437,17 +432,6 @@ body{
   color:rgba(245,245,245,.65);
 }
 
-@media (max-width:900px){
-  .career-icons{
-    justify-content:center;
-  }
-  .career-icons .icon-pill{
-    width:70%;
-    max-width:240px;
-    min-width:120px;
-    font-size:42px;
-  }
-}
 
 /* PAGE: dashboard */
 .stats{
@@ -456,12 +440,6 @@ body{
   gap:var(--gap);
   margin:14px 0 22px;
 }
-@media (max-width:1100px){
-  .stats{grid-template-columns:repeat(2,1fr)}
-}
-@media (max-width:700px){
-  .stats{grid-template-columns:1fr}
-}
 
 .dashboard .middle-row{
   display:grid;
@@ -469,18 +447,12 @@ body{
   gap:var(--gap);
   margin-bottom:var(--gap);
 }
-@media (max-width:1100px){
-  .dashboard .middle-row{grid-template-columns:1fr}
-}
 
 /* PAGE: analytics */
 .analytics-grid{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:var(--gap);
-}
-@media (max-width:900px){
-  .analytics-grid{grid-template-columns:1fr}
 }
 
 .split{
@@ -528,9 +500,6 @@ body{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:var(--gap);
-}
-@media (max-width:900px){
-  .settings .settings-grid{grid-template-columns:1fr}
 }
 
 /* PAGE: auth */
