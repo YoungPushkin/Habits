@@ -11,13 +11,14 @@ import HfCarousel from '../components/global/HfCarousel.vue'
 import BaseCard from '../components/global/BaseCard.vue'
 import PageHeader from '../components/global/PageHeader.vue'
 import BaseButton from '../components/global/BaseButton.vue'
+import BaseChip from '../components/global/BaseChip.vue'
 import CarouselControls from '../components/global/CarouselControls.vue'
 import { BUTTON_LABELS } from '../constants/buttons.js'
 
 export default {
   name: 'DashboardView',
   mixins: [CarouselMixin, HabitModalMixin, TaskModalMixin],
-  components: { HabitModal, TaskModal, HabitCard, TaskCard, HfCarousel, BaseCard, PageHeader, BaseButton, CarouselControls },
+  components: { HabitModal, TaskModal, HabitCard, TaskCard, HfCarousel, BaseCard, PageHeader, BaseButton, BaseChip, CarouselControls },
 
   computed: {
     todayHabitsForUI() { return this.habitsStore.todayHabitsForUI },
@@ -34,10 +35,10 @@ export default {
   <section class="dashboard app-page">
     <PageHeader title="Today overview" subtitle="Habits, tasks and progress for your day.">
       <template #meta>
-        <v-chip size="small" variant="tonal">
+        <BaseChip size="small" variant="tonal">
           <i class="bi bi-calendar2" style="margin-right:8px;"></i>
           {{ todayLabel }}
-        </v-chip>
+        </BaseChip>
       </template>
     </PageHeader>
 

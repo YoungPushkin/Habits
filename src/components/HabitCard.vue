@@ -26,12 +26,12 @@
           <div class="habit-meta">
             <span class="item-title">{{ habit.name }}</span>
 
-            <v-chip v-if="habit.isDaily" size="x-small" variant="tonal" color="primary">
+            <BaseChip v-if="habit.isDaily" size="x-small" variant="tonal" color="primary">
               Every day
-            </v-chip>
+            </BaseChip>
 
             <div v-if="!habit.isDaily && selectedDays.length" class="habit-days">
-              <v-chip
+              <BaseChip
                 v-for="d in selectedDays"
                 :key="d"
                 size="x-small"
@@ -39,7 +39,7 @@
                 color="primary"
               >
                 {{ d }}
-              </v-chip>
+              </BaseChip>
             </div>
 
             <div class="habit-category">
@@ -50,41 +50,23 @@
         </div>
 
         <div class="card-head-actions">
-          <v-chip
+          <BaseChip
             size="small"
             :color="doneToday ? 'success' : 'warning'"
             variant="tonal"
           >
             {{ doneToday ? 'Done today' : 'Pending' }}
-          </v-chip>
+          </BaseChip>
 
-          <v-menu v-if="showMenu" location="bottom end">
-            <template #activator="{ props }">
-              <BaseButton v-bind="props" kind="icon" icon size="small">
-                <i class="bi bi-three-dots-vertical"></i>
-              </BaseButton>
-            </template>
-
-            <v-list density="comfortable" class="menu">
-              <v-list-item @click="onEdit">
-                <template #prepend>
-                  <i class="bi bi-pencil act-gold"></i>
-                </template>
-                <v-list-item-title>Edit</v-list-item-title>
-              </v-list-item>
-
-              <v-list-item class="bad" @click="onDelete">
-                <template #prepend>
-                  <i class="bi bi-trash act-bad"></i>
-                </template>
-                <v-list-item-title>Delete</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
+          <EditDeleteMenu
+            v-if="showMenu"
+            @edit="onEdit"
+            @delete="onDelete"
+          />
         </div>
       </div>
 
-      <v-chip
+      <BaseChip
         v-if="!dueToday"
         size="small"
         variant="tonal"
@@ -93,19 +75,21 @@
       >
         <i class="bi bi-calendar2-x" style="margin-right:6px;"></i>
         Not scheduled for today
-      </v-chip>
+      </BaseChip>
     </v-card-text>
   </v-card>
 </template>
 
 <script>
 import { HABIT_CATEGORY_MAP } from '../constants/habitCategories.js'
-import BaseButton from './global/BaseButton.vue'
 import { WEEKDAYS_MON } from '../constants/weekdays.js'
+import BaseButton from './global/BaseButton.vue'
+import BaseChip from './global/BaseChip.vue'
+import EditDeleteMenu from './global/EditDeleteMenu.vue'
 
 export default {
   name: 'HabitCard',
-  components: { BaseButton },
+  components: { BaseButton, BaseChip, EditDeleteMenu },
   props: {
     habit: { type: Object, required: true },
     doneToday: { type: Boolean, default: false },
@@ -147,23 +131,10 @@ export default {
 </script>
 
 <style scoped>
-.menu{
-  min-width:180px;
-  border-radius:var(--r-md);
-  border:1px solid var(--border2);
-  background:rgba(11,11,11,.92);
-  backdrop-filter:blur(14px);
-}
-
 .item-title{
   font-size:15px;
   font-weight:500;
   color:var(--text);
-}
-
-.bad :deep(.v-list-item-title),
-.bad i{
-  color:#ef4444;
 }
 
 .habit-toggle :deep(.v-btn__overlay),

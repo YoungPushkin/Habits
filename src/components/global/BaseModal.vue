@@ -17,7 +17,29 @@
       <v-divider />
 
       <v-card-actions class="modal-pad-actions d-flex justify-end" :class="actionsClass">
-        <slot name="actions" />
+        <slot name="actions" v-if="hasActionsSlot" />
+        <template v-else>
+          <BaseButton
+            v-if="secondaryLabel"
+            :kind="secondaryKind"
+            :color="secondaryColor"
+            :variant="secondaryVariant"
+            :disabled="secondaryDisabled"
+            @click="$emit('secondary')"
+          >
+            {{ secondaryLabel }}
+          </BaseButton>
+          <BaseButton
+            v-if="primaryLabel"
+            :kind="primaryKind"
+            :color="primaryColor"
+            :variant="primaryVariant"
+            :disabled="primaryDisabled"
+            @click="$emit('primary')"
+          >
+            {{ primaryLabel }}
+          </BaseButton>
+        </template>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -34,8 +56,23 @@ export default {
     maxWidth: { type: [Number, String], default: 680 },
     bodyClass: { type: [String, Array, Object], default: '' },
     actionsClass: { type: [String, Array, Object], default: '' },
-    closeClass: { type: [String, Array, Object], default: 'btn-icon' }
+    closeClass: { type: [String, Array, Object], default: 'btn-icon' },
+    primaryLabel: { type: String, default: '' },
+    secondaryLabel: { type: String, default: '' },
+    primaryKind: { type: String, default: 'primary' },
+    secondaryKind: { type: String, default: 'action' },
+    primaryVariant: { type: String, default: '' },
+    secondaryVariant: { type: String, default: '' },
+    primaryColor: { type: String, default: undefined },
+    secondaryColor: { type: String, default: undefined },
+    primaryDisabled: { type: Boolean, default: false },
+    secondaryDisabled: { type: Boolean, default: false }
   },
-  emits: ['close']
+  emits: ['close', 'primary', 'secondary'],
+  computed: {
+    hasActionsSlot() {
+      return !!this.$slots.actions
+    }
+  }
 }
 </script>

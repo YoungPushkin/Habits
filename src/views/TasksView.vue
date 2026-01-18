@@ -6,13 +6,14 @@ import HfCarousel from '../components/global/HfCarousel.vue'
 import BaseCard from '../components/global/BaseCard.vue'
 import PageHeader from '../components/global/PageHeader.vue'
 import BaseButton from '../components/global/BaseButton.vue'
+import BaseChip from '../components/global/BaseChip.vue'
 import CarouselControls from '../components/global/CarouselControls.vue'
 import { BUTTON_LABELS } from '../constants/buttons.js'
 
 export default {
   name: 'TasksView',
   mixins: [TaskModalMixin],
-  components: { TaskCard, TaskModal, HfCarousel, BaseCard, PageHeader, BaseButton, CarouselControls },
+  components: { TaskCard, TaskModal, HfCarousel, BaseCard, PageHeader, BaseButton, BaseChip, CarouselControls },
   data() {
     return { priorityIndex: 0 }
   },
@@ -90,14 +91,14 @@ export default {
           @next="priorityNext"
         >
           <template #center>
-            <v-chip
+            <BaseChip
               v-if="currentSlide"
               size="small"
               variant="tonal"
               :color="currentSlide.color || 'primary'"
             >
               {{ currentSlide.label }} & {{ currentSlide.tasks.length }} tasks
-            </v-chip>
+            </BaseChip>
           </template>
         </CarouselControls>
       </template>

@@ -1,8 +1,8 @@
 <template>
   <div class="page-head">
     <div class="page-title">
-      <h1 class="t-h1 text-gold">{{ title }}</h1>
-      <p class="t-sub text-gold">{{ subtitle }}</p>
+      <h1 class="Header-h1">{{ title }}</h1>
+      <p class="Header-sub">{{ subtitle }}</p>
     </div>
 
     <div class="page-meta">

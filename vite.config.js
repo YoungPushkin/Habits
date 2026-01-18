@@ -2,6 +2,9 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
-  base: 'Habits',
-  plugins: [vue()]
+  base: '/Habits/',     
+  plugins: [vue()],
+  build: {
+    outDir: 'docs'
+  }
 })

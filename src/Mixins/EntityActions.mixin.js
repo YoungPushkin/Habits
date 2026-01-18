@@ -24,8 +24,7 @@ export function createEntityActionsMixin(options = {}) {
       const storeInstance = store ? store() : null
       return {
         ui: useUiStore(),
-        entityStore: storeInstance,
-        ...(storeKey ? { [storeKey]: storeInstance } : {})
+        ...(storeKey ? { [storeKey]: storeInstance } : { entityStore: storeInstance })
       }
     },
     methods: {
@@ -36,14 +35,15 @@ export function createEntityActionsMixin(options = {}) {
         this.openEdit(type, item)
       },
       [submitName](payload) {
-        if (!payload || !this.entityStore) return
+        const storeRef = storeKey ? this[storeKey] : this.entityStore
+        if (!payload || !storeRef) return
 
         if (this.modalMode === 'create') {
-          const res = this.entityStore[actions.add]?.(payload)
+          const res = storeRef[actions.add]?.(payload)
           if (res?.ok) this.ui.showToast(messages.created || 'Created', 'success')
           else if (res && res.error) this.ui.showToast(res.error, 'error')
         } else if (this.selectedItem) {
-          const res = this.entityStore[actions.edit]?.(this.selectedItem.id, payload)
+          const res = storeRef[actions.edit]?.(this.selectedItem.id, payload)
           if (res?.ok) this.ui.showToast(messages.updated || 'Updated', 'success')
           else if (res && res.error) this.ui.showToast(res.error, 'error')
         }
@@ -51,8 +51,9 @@ export function createEntityActionsMixin(options = {}) {
         this.closeModal()
       },
       [deleteName](id) {
-        if (!this.entityStore) return
-        const res = this.entityStore[actions.delete]?.(id)
+        const storeRef = storeKey ? this[storeKey] : this.entityStore
+        if (!storeRef) return
+        const res = storeRef[actions.delete]?.(id)
         if (res?.ok) this.ui.showToast(messages.deleted || 'Deleted', 'success')
         else if (res && res.error) this.ui.showToast(res.error, 'error')
         if (this.selectedItem && this.selectedItem.id === id) this.closeModal()
@@ -60,8 +61,9 @@ export function createEntityActionsMixin(options = {}) {
       ...(toggle
         ? {
             [toggle.name](id) {
-              if (!this.entityStore) return
-              const res = this.entityStore[toggle.action]?.(id)
+              const storeRef = storeKey ? this[storeKey] : this.entityStore
+              if (!storeRef) return
+              const res = storeRef[toggle.action]?.(id)
               if (res?.ok) {
                 const msg = typeof toggle.success === 'function'
                   ? toggle.success(res)
@@ -77,8 +79,9 @@ export function createEntityActionsMixin(options = {}) {
         Object.entries(extraMethods).map(([name, cfg]) => [
           name,
           function(id) {
-            if (!this.entityStore) return
-            const res = this.entityStore[cfg.action]?.(id)
+            const storeRef = storeKey ? this[storeKey] : this.entityStore
+            if (!storeRef) return
+            const res = storeRef[cfg.action]?.(id)
             if (res?.ok) this.ui.showToast(cfg.success || 'Updated', 'success')
             else if (res && res.error) this.ui.showToast(res.error, 'error')
           }

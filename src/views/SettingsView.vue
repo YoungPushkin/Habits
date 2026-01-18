@@ -6,15 +6,18 @@ import PageHeader from '../components/global/PageHeader.vue';
 import FormErrorAlert from '../components/form/FormErrorAlert.vue';
 import BaseButton from '../components/global/BaseButton.vue';
 import { BUTTON_LABELS } from '../constants/buttons.js';
+import { ACCENT_OPTIONS } from '../constants/options.js';
+import OptionToggle from '../components/global/OptionToggle.vue';
 
 
 
 export default {
   name: 'SettingsView',
   mixins: [settingsMixin],
-  components: { BaseCard, BaseModal, PageHeader, FormErrorAlert, BaseButton },
+  components: { BaseCard, BaseModal, PageHeader, FormErrorAlert, BaseButton, OptionToggle },
   computed: {
-    buttonLabels() { return BUTTON_LABELS }
+    buttonLabels() { return BUTTON_LABELS },
+    accentOptions() { return ACCENT_OPTIONS }
   }
 }
 </script>
@@ -86,15 +89,15 @@ export default {
             <div class="t-cap">Choose Gold or Silver style</div>
           </div>
 
-          <v-btn-toggle
+          <OptionToggle
             :model-value="ui.accent"
+            :options="accentOptions"
             mandatory
             density="comfortable"
+            variant="tonal"
+            button-class="btn-action"
             @update:modelValue="ui.setAccent"
-          >
-            <v-btn value="gold" variant="tonal" class="btn-action">Gold</v-btn>
-            <v-btn value="silver" variant="tonal" class="btn-action">Silver</v-btn>
-          </v-btn-toggle>
+          />
         </div>
       </BaseCard>
 
@@ -111,6 +114,10 @@ export default {
       v-if="showPasswordModal"
       title="Change password"
       :max-width="560"
+      :primary-label="buttonLabels.save"
+      :secondary-label="buttonLabels.cancel"
+      @primary="submitPasswordChange"
+      @secondary="showPasswordModal = false"
       @close="showPasswordModal = false"
     >
       <v-text-field
@@ -135,33 +142,24 @@ export default {
 
       <FormErrorAlert :message="passwordError" />
 
-      <template #actions>
-        <BaseButton kind="action" @click="showPasswordModal = false">
-          {{ buttonLabels.cancel }}
-        </BaseButton>
-        <BaseButton kind="primary" @click="submitPasswordChange">
-          {{ buttonLabels.save }}
-        </BaseButton>
-      </template>
     </BaseModal>
 
     <BaseModal
       v-if="showResetDialog"
       title="Reset all data?"
       :max-width="480"
+      :primary-label="buttonLabels.reset"
+      :secondary-label="buttonLabels.cancel"
+      primary-kind="action"
+      primary-color="error"
+      primary-variant="flat"
+      @primary="resetAll"
+      @secondary="showResetDialog = false"
       @close="showResetDialog = false"
     >
       <div class="t-body mb-2">Are you sure? All habits and tasks will be deleted permanently.</div>
       <div class="t-cap">This cannot be undone.</div>
 
-      <template #actions>
-        <BaseButton kind="action" @click="showResetDialog = false">
-          {{ buttonLabels.cancel }}
-        </BaseButton>
-        <BaseButton kind="action" color="error" variant="flat" @click="resetAll">
-          {{ buttonLabels.reset }}
-        </BaseButton>
-      </template>
     </BaseModal>
   </section>
 </template>

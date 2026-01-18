@@ -7,5 +7,7 @@ export const AUTH_ERRORS = {
 export const VALIDATION_ERRORS = {
   TITLE_REQUIRED: 'Title is required',
   NAME_REQUIRED: 'Name is required',
-  DAYS_REQUIRED: 'Select at least one day'
+  DAYS_REQUIRED: 'Select at least one day',
+  DATE_INVALID: 'Deadline date is invalid',
+  DEADLINE_PAST: 'Deadline must be today or later'
 }

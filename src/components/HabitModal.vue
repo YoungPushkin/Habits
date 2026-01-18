@@ -3,6 +3,10 @@
     :title="mode === 'create' ? 'Create habit' : 'Edit habit'"
     :max-width="520"
     body-class="pt-2"
+    :primary-label="mode === 'create' ? buttonLabels.saveHabit : buttonLabels.saveChanges"
+    :secondary-label="buttonLabels.cancel"
+    @primary="save"
+    @secondary="$emit('close')"
     @close="$emit('close')"
   >
     <div>
@@ -15,6 +19,7 @@
         :error-messages="error ? [error] : []"
         hide-details="auto"
         @keydown.enter.prevent="save"
+        @update:modelValue="clearError"
       />
     </div>
 
@@ -46,10 +51,11 @@
 
     <div class="mt-4">
       <div class="t-label mb-2">Repeat</div>
-      <v-btn-toggle v-model="repeatMode" mandatory density="comfortable">
-        <v-btn value="daily">Every day</v-btn>
-        <v-btn value="days">Specific days</v-btn>
-      </v-btn-toggle>
+      <OptionToggle
+        v-model="repeatMode"
+        :options="repeatOptions"
+        density="comfortable"
+      />
     </div>
 
     <div v-if="repeatMode === 'days'" class="mt-4">
@@ -72,14 +78,6 @@
       <FormErrorAlert :message="daysError ? error : ''" alert-class="mt-3" />
     </div>
 
-    <template #actions>
-      <BaseButton kind="action" @click="$emit('close')">
-        {{ buttonLabels.cancel }}
-      </BaseButton>
-      <BaseButton kind="primary" @click="save">
-        {{ mode === 'create' ? buttonLabels.saveHabit : buttonLabels.saveChanges }}
-      </BaseButton>
-    </template>
   </BaseModal>
 </template>
 
@@ -88,13 +86,14 @@ import { validateHabitPayload } from '../utils/validators.js'
 import BaseModal from './global/BaseModal.vue'
 import { HABIT_CATEGORIES } from '../constants/habitCategories.js'
 import FormErrorAlert from './form/FormErrorAlert.vue'
-import BaseButton from './global/BaseButton.vue'
 import { BUTTON_LABELS } from '../constants/buttons.js'
+import { HABIT_REPEAT_OPTIONS } from '../constants/options.js'
 import { WEEKDAYS_MON } from '../constants/weekdays.js'
+import OptionToggle from './global/OptionToggle.vue'
 
 export default {
   name: 'HabitModal',
-  components: { BaseModal, FormErrorAlert, BaseButton },
+  components: { BaseModal, FormErrorAlert, OptionToggle },
   props: {
     mode: { type: String, default: 'create' },
     habit: { type: Object, default: null }
@@ -113,6 +112,11 @@ export default {
         daysIdx: [] 
       },
       buttonLabels: BUTTON_LABELS
+    }
+  },
+  computed: {
+    repeatOptions() {
+      return HABIT_REPEAT_OPTIONS
     }
   },
   watch: {

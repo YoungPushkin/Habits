@@ -12,9 +12,9 @@
     </BaseButton>
 
     <slot name="center">
-      <v-chip v-if="showCounter" size="small" variant="tonal" color="primary">
+      <BaseChip v-if="showCounter" size="small" variant="tonal" color="primary">
         {{ index }} / {{ total }}
-      </v-chip>
+      </BaseChip>
     </slot>
 
     <BaseButton
@@ -32,10 +32,11 @@
 
 <script>
 import BaseButton from './BaseButton.vue'
+import BaseChip from './BaseChip.vue'
 
 export default {
   name: 'CarouselControls',
-  components: { BaseButton },
+  components: { BaseButton, BaseChip },
   props: {
     index: { type: Number, default: 0 },
     total: { type: Number, default: 0 },

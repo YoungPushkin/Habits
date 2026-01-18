@@ -5,12 +5,13 @@ import HabitModal from '../components/HabitModal.vue'
 import BaseCard from '../components/global/BaseCard.vue'
 import PageHeader from '../components/global/PageHeader.vue'
 import BaseButton from '../components/global/BaseButton.vue'
+import BaseChip from '../components/global/BaseChip.vue'
 import { BUTTON_LABELS } from '../constants/buttons.js'
 
 export default {
   name: 'HabitsView',
   mixins: [HabitModalMixin],
-  components: { HabitCard, HabitModal, BaseCard, PageHeader, BaseButton },
+  components: { HabitCard, HabitModal, BaseCard, PageHeader, BaseButton, BaseChip },
   computed: {
     habitsUI() { return this.habitsStore.habitsUI },
     buttonLabels() { return BUTTON_LABELS }
@@ -33,9 +34,9 @@ export default {
 
     <BaseCard title="All habits" body-class="card-scroll">
       <template #meta>
-        <v-chip size="small" variant="tonal" color="primary">
+        <BaseChip size="small" variant="tonal" color="primary">
           Total: {{ habitsUI.length }}
-        </v-chip>
+        </BaseChip>
       </template>
 
       <div v-if="habitsUI.length === 0" class="t-body">

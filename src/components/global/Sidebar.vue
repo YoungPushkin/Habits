@@ -8,7 +8,7 @@
   >
     <div class="sidebar-head">
       <div class="sidebar-brand">
-        <span :class="['brand text-gold', { 'brand-hidden': collapsed }]">Habit Flow</span>
+        <span :class="['brand', { 'brand-hidden': collapsed }]">Habit Flow</span>
       </div>
 
       <BaseButton kind="icon" icon variant="text" class="toggle-btn" @click="$emit('toggle')">

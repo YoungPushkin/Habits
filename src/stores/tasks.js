@@ -130,6 +130,7 @@ export const useTasksStore = defineStore('tasks', {
         })
     },
 
+
     weeklyCompleted(state) {
       const labels = WEEKDAYS_MON
       const monday = startOfWeekMonday(new Date())
@@ -147,6 +148,61 @@ export const useTasksStore = defineStore('tasks', {
       }
 
       return labels.map((label, i) => ({ label, day: label, count: map[isoDays[i]] || 0 }))
+    },
+
+    weeklyHistory(state) {
+      const labels = WEEKDAYS_MON
+      const tasks = state.tasks || []
+      const done = tasks.filter(t => t.status === 'done' && t.completedAt)
+
+      const map = Object.create(null)
+      let minDate = null
+      let maxDate = null
+
+      for (const t of done) {
+        const d = new Date(t.completedAt)
+        if (Number.isNaN(d.getTime())) continue
+        const iso = isoFromDate(d)
+        map[iso] = (map[iso] || 0) + 1
+        if (!minDate || d < minDate) minDate = d
+        if (!maxDate || d > maxDate) maxDate = d
+      }
+
+      const today = startOfDay(new Date())
+      if (!minDate) {
+        minDate = today
+        maxDate = today
+      } else if (maxDate < today) {
+        maxDate = today
+      }
+
+      const startWeek = startOfWeekMonday(minDate)
+      const endWeek = startOfWeekMonday(maxDate)
+      const weeks = []
+
+      for (let wk = startWeek; wk <= endWeek; wk = addDays(wk, 7)) {
+        const weekStart = wk
+        const weekEnd = addDays(weekStart, 6)
+        const showYear = weekStart.getFullYear() != weekEnd.getFullYear() || weekStart.getFullYear() != today.getFullYear()
+        const fmt = (d) => d.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          ...(showYear ? { year: 'numeric' } : {})
+        })
+        const label = `${fmt(weekStart)} - ${fmt(weekEnd)}`
+        const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
+
+        weeks.push({
+          key: isoFromDate(weekStart),
+          label,
+          items: labels.map((l, i) => {
+            const iso = isoFromDate(days[i])
+            return { label: l, day: l, count: map[iso] || 0 }
+          })
+        })
+      }
+
+      return weeks
     },
 
     mostProductiveDay(state) {

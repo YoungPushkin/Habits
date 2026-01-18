@@ -1,5 +1,8 @@
 <template>
   <BaseCard :title="title" :subtitle="subtitle">
+    <template v-if="$slots['title-actions']" #title-actions>
+      <slot name="title-actions" />
+    </template>
     <div v-if="items && items.length" class="chart-bars">
       <div v-for="item in items" :key="item.label" class="chart-col">
         <div class="chart-box">

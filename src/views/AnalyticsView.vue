@@ -9,15 +9,17 @@ import HabitCard from '../components/HabitCard.vue'
 import BaseCard from '../components/global/BaseCard.vue'
 import PageHeader from '../components/global/PageHeader.vue'
 import BaseButton from '../components/global/BaseButton.vue'
+import BaseChip from '../components/global/BaseChip.vue'
 import CarouselControls from '../components/global/CarouselControls.vue'
 
 export default {
   name: 'AnalyticsView',
-  components: { HfCarousel, DonutChart, BarChartCard, HabitCard, BaseCard, PageHeader, BaseButton, CarouselControls },
+  components: { HfCarousel, DonutChart, BarChartCard, HabitCard, BaseCard, PageHeader, BaseButton, BaseChip, CarouselControls },
   data() {
     return {
       habitsStore: useHabitsStore(),
-      tasksStore: useTasksStore()
+      tasksStore: useTasksStore(),
+      weekIndex: 0
     }
   },
   computed: {
@@ -29,7 +31,7 @@ export default {
     mediumCount() { return this.tasksStore.mediumCount },
     lowCount() { return this.tasksStore.lowCount },
     mostProductiveDay() { return this.tasksStore.mostProductiveDay },
-    weeklyCompleted() { return this.tasksStore.weeklyCompleted },
+    weeklyHistory() { return this.tasksStore.weeklyHistory },
     monthlyHistory() { return this.tasksStore.monthlyHistory },
 
     highPercent() {
@@ -62,12 +64,24 @@ export default {
         { key: 'low', percent: this.lowPercent, className: 'p-low' }
       ]
     },
+    priorityLegendItems() {
+      return [
+        { key: 'high', label: 'High', count: this.highCount, className: 'p-high' },
+        { key: 'med', label: 'Medium', count: this.mediumCount, className: 'p-med' },
+        { key: 'low', label: 'Low', count: this.lowCount, className: 'p-low' }
+      ]
+    },
 
     progressSegments() {
       return [
         { key: 'done', percent: this.tasksCompletionPercent, className: 'p-done' }
       ]
     },
+
+    currentWeek() { return this.weeklyHistory?.[this.weekIndex] || null },
+    weekAtStart() { return this.weekIndex <= 0 },
+    weekAtEnd() { return this.weekIndex >= ((this.weeklyHistory?.length || 1) - 1) },
+    weekTotal() { return this.weeklyHistory?.length || 0 },
 
     analyticsSlides() {
       return [
@@ -77,6 +91,22 @@ export default {
     }
   },
 
+  methods: {
+    prevWeek() { if (!this.weekAtStart) this.weekIndex -= 1 },
+    nextWeek() { if (!this.weekAtEnd) this.weekIndex += 1 }
+  },
+
+  watch: {
+    weeklyHistory: {
+      immediate: true,
+      deep: true,
+      handler(val) {
+        const max = (val?.length || 1) - 1
+        this.weekIndex = Math.max(0, max)
+      }
+    }
+  }
+
 }
 </script>
 
@@ -84,15 +114,15 @@ export default {
   <section class="app-page">
     <PageHeader title="Analytics" subtitle="Deep insights into your discipline and progress.">
       <template #meta>
-        <v-chip class="ma-0" variant="tonal">
+        <BaseChip class="ma-0" variant="tonal">
           <span class="t-cap">Total days tracked</span>
           <span class="t-body ms-2">{{ habitsStore.activeDays || 0 }}</span>
-        </v-chip>
+        </BaseChip>
 
-        <v-chip class="ma-0" variant="tonal">
+        <BaseChip class="ma-0" variant="tonal">
           <span class="t-cap">Tasks completed</span>
           <span class="t-body ms-2">{{ completedTasksCount }}</span>
-        </v-chip>
+        </BaseChip>
       </template>
     </PageHeader>
 
@@ -167,40 +197,39 @@ export default {
       <template #default="{ item }">
         <div class="analytics-grid">
           <template v-if="item.key === 'priority-week'">
-            <BaseCard title="Tasks by priority" subtitle="Active tasks distribution">
+            <DonutChart
+              title="Tasks by priority"
+              subtitle="Active tasks distribution"
+              :segments="prioritySegments"
+              :legend-items="priorityLegendItems"
+              :empty="totalActive === 0"
+              empty-text="No active tasks yet"
+              content-class="split"
+            >
               <template #meta>
-                <v-chip size="small" variant="tonal" color="primary">
+                <BaseChip size="small" variant="tonal" color="primary">
                   {{ totalActive }} active
-                </v-chip>
+                </BaseChip>
               </template>
-
-              <div v-if="totalActive > 0" class="split">
-                <DonutChart :segments="prioritySegments" />
-
-                <div class="legend">
-                  <div class="legend-item t-cap p-high">
-                    <span class="legend-dot"></span>
-                    High ({{ highCount }})
-                  </div>
-                  <div class="legend-item t-cap p-med">
-                    <span class="legend-dot"></span>
-                    Medium ({{ mediumCount }})
-                  </div>
-                  <div class="legend-item t-cap p-low">
-                    <span class="legend-dot"></span>
-                    Low ({{ lowCount }})
-                  </div>
-                </div>
-              </div>
-
-              <div v-else class="t-cap">No active tasks yet</div>
-            </BaseCard>
+            </DonutChart>
 
             <BarChartCard
-              title="Tasks this week"
-              :subtitle="`Most productive: ${mostProductiveDay}`"
-              :items="weeklyCompleted"
-            />
+              title="Tasks by week"
+              :subtitle="currentWeek ? currentWeek.label : ''"
+              :items="currentWeek ? currentWeek.items : []"
+            >
+              <template #title-actions>
+                <CarouselControls
+                  align="center"
+                  :index="weekIndex + 1"
+                  :total="weekTotal"
+                  :at-start="weekAtStart"
+                  :at-end="weekAtEnd"
+                  @prev="prevWeek"
+                  @next="nextWeek"
+                />
+              </template>
+            </BarChartCard>
           </template>
 
           <template v-else>
@@ -210,20 +239,18 @@ export default {
               :items="monthlyHistory"
             />
 
-            <BaseCard title="Tasks progress" subtitle="Overall completion">
+            <DonutChart title="Tasks progress" subtitle="Overall completion" :segments="progressSegments">
               <template #meta>
-                <v-chip size="small" variant="tonal" color="primary">
+                <BaseChip size="small" variant="tonal" color="primary">
                   {{ completedTasksCount }} done
-                </v-chip>
+                </BaseChip>
               </template>
 
-              <DonutChart :segments="progressSegments">
-                <template #label>
-                  <span class="t-h2">{{ tasksCompletionPercent }}%</span>
-                  <span class="t-cap">completed</span>
-                </template>
-              </DonutChart>
-            </BaseCard>
+              <template #label>
+                <span class="t-h2">{{ tasksCompletionPercent }}%</span>
+                <span class="t-cap">completed</span>
+              </template>
+            </DonutChart>
           </template>
         </div>
       </template>

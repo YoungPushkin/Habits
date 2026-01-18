@@ -5,16 +5,16 @@
         <div class="task-title-group">
           <span class="item-title">{{ task.title }}</span>
 
-          <v-chip size="x-small" variant="tonal" :color="priorityColor">
+          <BaseChip size="x-small" variant="tonal" :color="priorityColor">
             {{ task.priority }}
-          </v-chip>
+          </BaseChip>
         </div>
       </div>
 
-      <v-chip size="small" variant="tonal" :color="deadlineColor">
+      <BaseChip size="small" variant="tonal" :color="deadlineColor">
         <i class="bi bi-calendar2" style="margin-right:8px"></i>
         <span>{{ deadlineText }}</span>
-      </v-chip>
+      </BaseChip>
 
       <div class="task-actions">
         <BaseButton
@@ -27,34 +27,7 @@
           {{ buttonLabels.complete }}
         </BaseButton>
 
-        <v-menu location="bottom end">
-          <template #activator="{ props }">
-            <BaseButton
-              v-bind="props"
-              kind="icon"
-              icon
-              size="small"
-            >
-              <i class="bi bi-three-dots-vertical"></i>
-            </BaseButton>
-          </template>
-
-          <v-list density="comfortable" class="menu">
-            <v-list-item @click="onEdit">
-              <template #prepend>
-                <i class="bi bi-pencil act-gold"></i>
-              </template>
-              <v-list-item-title>Edit</v-list-item-title>
-            </v-list-item>
-
-            <v-list-item class="bad" @click="onDelete">
-              <template #prepend>
-                <i class="bi bi-trash act-bad"></i>
-              </template>
-              <v-list-item-title>Delete</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
+        <EditDeleteMenu @edit="onEdit" @delete="onDelete" />
       </div>
     </v-card-text>
   </v-card>
@@ -62,12 +35,14 @@
 
 <script>
 import BaseButton from './global/BaseButton.vue'
+import BaseChip from './global/BaseChip.vue'
+import EditDeleteMenu from './global/EditDeleteMenu.vue'
 import { BUTTON_LABELS } from '../constants/buttons.js'
 import { parseISODate, formatISODate } from '../utils/date.js'
 
 export default {
   name: 'TaskCard',
-  components: { BaseButton },
+  components: { BaseButton, BaseChip, EditDeleteMenu },
   props: {
     task: { type: Object, required: true }
   },
@@ -108,23 +83,10 @@ export default {
 </script>
 
 <style scoped>
-.menu{
-  min-width:180px;
-  border-radius:var(--r-md);
-  border:1px solid var(--border2);
-  background:rgba(11,11,11,.92);
-  backdrop-filter:blur(14px);
-}
-
 .item-title{
   font-size:15px;
   font-weight:500;
   color:var(--text);
-}
-
-.bad :deep(.v-list-item-title),
-.bad i{
-  color:#ef4444;
 }
 
 .task-row{
